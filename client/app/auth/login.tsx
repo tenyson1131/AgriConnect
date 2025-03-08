@@ -2,35 +2,35 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 
-export default function signup() {
-  const [name, setName] = useState("");
+export default function login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { onRegister } = useAuth();
+  const { onLogin } = useAuth();
 
-  async function handleSignup() {
-    console.log("Signup btn pressed", name, email, password);
-    if (!name || !email || !password) {
+  const router = useRouter();
+
+  async function handleLogin() {
+    console.log("login btn pressed", email, password);
+    if (!email || !password) {
       alert("Please fill the form");
       return;
     }
 
-    const result = await onRegister!(name, email, password);
+    const result = await onLogin!(email, password);
     if (result) {
-      console.log("Signup result: ", result);
+      console.log("login result: ", result.status);
+
+      if (result.status == 200) {
+        router.replace("/user");
+      }
     }
   }
   return (
     <View>
-      <Text>signup Page</Text>
-      <TextInput
-        placeholder="name"
-        className="border my-4"
-        value={name}
-        onChangeText={(text) => setName(text)}
-      />
+      <Text>login Page</Text>
       <TextInput
         placeholder="email"
         className="border my-4"
@@ -46,7 +46,7 @@ export default function signup() {
 
       <Pressable
         className="bg-blue-400 items-center py-2 my-5"
-        onPress={handleSignup}
+        onPress={handleLogin}
       >
         <Text>Sign up btn pressed</Text>
       </Pressable>

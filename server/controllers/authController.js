@@ -1,4 +1,6 @@
 const User = require("../models/User.js");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 async function signup(req, res) {
   try {
@@ -13,7 +15,10 @@ async function signup(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    user = new User({ uid: "", email, password, name });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user = new User({ uid: "", email, password: hashedPassword, name });
     await user.save();
 
     res.status(200).json({ message: "User created successfully", user });
@@ -26,4 +31,28 @@ async function signup(req, res) {
   }
 }
 
-module.exports = { signup };
+async function login(req, res) {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User does not exist" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+    res.status(200).json({
+      token,
+      user: { id: user._id, email: user.email, name: user.name },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+}
+
+module.exports = { signup, login };
