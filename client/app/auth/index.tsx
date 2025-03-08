@@ -1,57 +1,46 @@
-import { View, Text, Pressable } from "react-native";
-import React from "react";
 import { useRouter } from "expo-router";
-import axios from "axios";
+import { Image, Pressable, Text, View } from "react-native";
 
-const index = () => {
+export default function onBoarding() {
   const router = useRouter();
-
-  async function getProfileInfo() {
-    console.log("Get profile info");
-    try {
-      const res = await axios.get(
-        `${process.env.EXPO_PUBLIC_SERVER_URL}/profile`
-      );
-
-      console.log("res in prfoile: ", res);
-    } catch (error) {
-      console.log("error while getting profile info", error);
-    }
-  }
-
   return (
-    <View>
-      <Text className="">Auth Page</Text>
-      <Pressable
-        className="bg-red-400 items-center py-2 my-5"
-        onPress={() => {
-          console.log("Login");
-          router.push("/auth/login");
-        }}
-      >
-        <Text>Login</Text>
-      </Pressable>
-      <Pressable
-        className="bg-blue-400 items-center py-2 my-5"
-        onPress={() => {
-          console.log("Sign up");
-          router.push("/auth/signup");
-        }}
-      >
-        <Text>Sign up</Text>
-      </Pressable>
-
-      <View className="mt-5">
-        <Text>Get profile info:</Text>
-        <Pressable
-          className="my-2 py-2 items-center bg-green-400"
-          onPress={getProfileInfo}
-        >
-          <Text>Get profile info</Text>
-        </Pressable>
+    <>
+      <View className="flex-1 justify-center items-center">
+        <View className="items-center">
+          <Text className="text-3xl text-[#26885f] font-medium">
+            Agri Connect
+          </Text>
+          <Text className="text-[#19a974] text-lg mt-2">
+            Smart Shopping in easy steps
+          </Text>
+        </View>
+        <View className="my-20">
+          <Image
+            source={require("@/assets/images/onBoarding.webp")}
+            className="w-96 h-96"
+          />
+        </View>
+        <View className="w-full">
+          <Pressable
+            className="bg-[#19a974] active:bg-[#26885f] px-10 py-3 rounded-full mx-14"
+            onPress={() => router.push("/auth/authOptions")}
+          >
+            <Text className="text-white text-center text-xl font-semibold">
+              Get Started
+            </Text>
+          </Pressable>
+          {/* <Pressable className="bg-white px-10 py-3 rounded-full mx-14 border-2 border-[#19a974] my-5">
+            <Text className="text-[#19a974] active:text-[#26885f] text-center text-xl font-semibold">
+              Already have an account?
+            </Text>
+          </Pressable>
+          <Pressable className="my-4">
+            <Text className="text-[#19a974] text-center font-semibold text-lg">
+              Continue as Guest
+            </Text>
+          </Pressable> */}
+        </View>
       </View>
-    </View>
+    </>
   );
-};
-
-export default index;
+}

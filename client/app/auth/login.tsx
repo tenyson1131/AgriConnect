@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
+import LoginScreen from "@/src/screens/LoginScreen";
 
 export default function login() {
   const [email, setEmail] = useState("");
@@ -29,27 +30,28 @@ export default function login() {
     }
   }
   return (
-    <View>
-      <Text>login Page</Text>
-      <TextInput
-        placeholder="email"
-        className="border my-4"
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-      />
-      <TextInput
-        placeholder="password"
-        className="border my-4"
-        value={password}
-        onChangeText={(text) => setPassword(text)}
-      />
+    // <View>
+    //   <Text>login Page</Text>
+    //   <TextInput
+    //     placeholder="email"
+    //     className="border my-4"
+    //     value={email}
+    //     onChangeText={(text) => setEmail(text)}
+    //   />
+    //   <TextInput
+    //     placeholder="password"
+    //     className="border my-4"
+    //     value={password}
+    //     onChangeText={(text) => setPassword(text)}
+    //   />
 
-      <Pressable
-        className="bg-blue-400 items-center py-2 my-5"
-        onPress={handleLogin}
-      >
-        <Text>Sign up btn pressed</Text>
-      </Pressable>
-    </View>
+    //   <Pressable
+    //     className="bg-blue-400 items-center py-2 my-5"
+    //     onPress={handleLogin}
+    //   >
+    //     <Text>Sign up btn pressed</Text>
+    //   </Pressable>
+    // </View>
+    <LoginScreen navigation={router} />
   );
 }
