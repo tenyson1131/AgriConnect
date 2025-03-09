@@ -9,11 +9,17 @@ const authRouter = require("./routes/authRoutes.js");
 
 // middelwares
 const cors = require("cors");
+const authMiddleware = require("./middleware/authMiddleware.js");
 app.use(express.json());
 app.use(cors());
 
 // routes
 app.use("/api/auth", authRouter);
+
+app.get("/profile", authMiddleware, (req, res) => {
+  console.log("in profile route");
+  res.json({ xax: req.user });
+});
 
 async function startServer() {
   console.log("starting server....");

@@ -7,15 +7,15 @@ const index = () => {
   const router = useRouter();
 
   async function getProfileInfo() {
-    console.log("Get profile info");
+    console.log("get pr ino");
     try {
-      const res = await axios.get(
+      const { data } = await axios.get(
         `${process.env.EXPO_PUBLIC_SERVER_URL}/profile`
       );
 
-      console.log("res in prfoile: ", res);
+      console.log("res.data: ", data);
     } catch (error) {
-      console.log("error while getting profile info", error);
+      console.log("details error", error);
     }
   }
 

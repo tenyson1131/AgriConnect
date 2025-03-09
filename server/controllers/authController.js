@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 async function signup(req, res) {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, role } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: "Please fill in all fields" });
@@ -15,10 +15,18 @@ async function signup(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    const userRole = role === "farmer" ? "farmer" : "buyer";
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    user = new User({ uid: "", email, password: hashedPassword, name });
+    user = new User({
+      uid: "",
+      name,
+      email,
+      password: hashedPassword,
+      role: userRole,
+    });
     await user.save();
 
     res.status(200).json({ message: "User created successfully", user });
