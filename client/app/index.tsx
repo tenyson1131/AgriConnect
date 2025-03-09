@@ -13,7 +13,7 @@ const index = () => {
   }
 
   if (authState?.authenticated) {
-    return <Redirect href="/user" />;
+    return <Redirect href="/user/home" />;
   }
 
   return <Redirect href="/auth" />;

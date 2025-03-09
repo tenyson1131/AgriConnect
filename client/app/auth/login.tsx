@@ -25,7 +25,7 @@ export default function login() {
       console.log("login result: ", result.status);
 
       if (result.status == 200) {
-        router.replace("/user");
+        router.replace("/user/home");
       }
     }
   }
