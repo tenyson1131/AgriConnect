@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import LoginScreen from "@/src/screens/LoginScreen";
+import LoginScreen from "@/src/screens/auth/LoginScreen";
 
 export default function login() {
   const [email, setEmail] = useState("");
@@ -13,22 +13,22 @@ export default function login() {
 
   const router = useRouter();
 
-  async function handleLogin() {
-    console.log("login btn pressed", email, password);
-    if (!email || !password) {
-      alert("Please fill the form");
-      return;
-    }
+  // async function handleLogin() {
+  //   console.log("login btn pressed", email, password);
+  //   if (!email || !password) {
+  //     alert("Please fill the form");
+  //     return;
+  //   }
 
-    const result = await onLogin!(email, password);
-    if (result) {
-      console.log("login result: ", result.status);
+  //   const result = await onLogin!(email, password);
+  //   if (result) {
+  //     console.log("login result: ", result.status);
 
-      if (result.status == 200) {
-        router.replace("/user/home");
-      }
-    }
-  }
+  //     if (result.status == 200) {
+  //       router.replace("/user/home");
+  //     }
+  //   }
+  // }
   return (
     // <View>
     //   <Text>login Page</Text>

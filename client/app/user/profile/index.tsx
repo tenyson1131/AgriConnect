@@ -2,6 +2,7 @@ import { View, Text, Pressable } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
+import ProfileScreen from "@/src/screens/ProfileScreen";
 
 export default function index() {
   const router = useRouter();
@@ -26,5 +27,6 @@ export default function index() {
         <Text>Logout</Text>
       </Pressable>
     </View>
+    // <ProfileScreen />
   );
 }

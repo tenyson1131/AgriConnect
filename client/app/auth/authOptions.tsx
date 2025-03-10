@@ -2,8 +2,9 @@ import { View, Text, Pressable } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import AuthOptionScreen from "@/src/screens/auth/AuthOptionScreen";
 
-const index = () => {
+const authOptions = () => {
   const router = useRouter();
 
   async function getProfileInfo() {
@@ -35,10 +36,20 @@ const index = () => {
         className="bg-blue-400 items-center py-2 my-5"
         onPress={() => {
           console.log("Sign up");
-          router.push("/auth/signup");
+          router.push("/auth/signup?type=buyer");
         }}
       >
-        <Text>Sign up</Text>
+        <Text>Sign up as buyer</Text>
+      </Pressable>
+
+      <Pressable
+        className="bg-blue-400 items-center py-2 my-5"
+        onPress={() => {
+          console.log("Sign up");
+          router.push("/auth/signup?type=farmer");
+        }}
+      >
+        <Text>Sign up as farmer</Text>
       </Pressable>
 
       <View className="mt-5">
@@ -51,7 +62,8 @@ const index = () => {
         </Pressable>
       </View>
     </View>
+    // <AuthOptionScreen />
   );
 };
 
-export default index;
+export default authOptions;

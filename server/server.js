@@ -5,7 +5,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const connectDB = require("./db/db.js");
+
+// router imports
 const authRouter = require("./routes/authRoutes.js");
+const productRouter = require("./routes/productRoutes.js");
 
 // middelwares
 const cors = require("cors");
@@ -15,6 +18,7 @@ app.use(cors());
 
 // routes
 app.use("/api/auth", authRouter);
+app.use("/api/product", productRouter);
 
 app.get("/profile", authMiddleware, (req, res) => {
   console.log("in profile route");

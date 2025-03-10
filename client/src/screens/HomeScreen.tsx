@@ -25,42 +25,43 @@ const categories = [
   { id: 5, name: "Grain", icon: "🌾" },
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "Fresh Apples",
-    price: 3.99,
-    image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6",
-    rating: 4.5,
-    farmName: "Green Valley",
-  },
-  {
-    id: 2,
-    name: "Organic Tomatoes",
-    price: 2.49,
-    image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337",
-    rating: 4.7,
-    farmName: "Sunshine Farms",
-  },
-  {
-    id: 3,
-    name: "Farm Eggs",
-    price: 4.99,
-    image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f",
-    rating: 4.8,
-    farmName: "Happy Hens",
-  },
-  {
-    id: 4,
-    name: "Fresh Milk",
-    price: 3.29,
-    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b",
-    rating: 4.6,
-    farmName: "Dairy Delight",
-  },
-];
+// const products = [
+//   {
+//     id: 1,
+//     name: "Fresh Apples",
+//     price: 3.99,
+//     image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6",
+//     rating: 4.5,
+//     farmName: "Green Valley",
+//   },
+//   {
+//     id: 2,
+//     name: "Organic Tomatoes",
+//     price: 2.49,
+//     image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337",
+//     rating: 4.7,
+//     farmName: "Sunshine Farms",
+//   },
+//   {
+//     id: 3,
+//     name: "Farm Eggs",
+//     price: 4.99,
+//     image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f",
+//     rating: 4.8,
+//     farmName: "Happy Hens",
+//   },
+//   {
+//     id: 4,
+//     name: "Fresh Milk",
+//     price: 3.29,
+//     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b",
+//     rating: 4.6,
+//     farmName: "Dairy Delight",
+//   },
+// ];
 
-const HomeScreen = () => {
+const HomeScreen = ({ products }) => {
+  console.log("@#HOMESCREEN Products: ", products);
   const router = useRouter();
   return (
     <SafeAreaView className="flex-1 bg-white pb-16">
@@ -163,29 +164,29 @@ const HomeScreen = () => {
           </View>
 
           <View className="px-4 flex-row flex-wrap justify-between">
-            {products.map((product) => (
+            {products?.map((product) => (
               <TouchableOpacity
-                key={product.id}
+                key={product?._id}
                 className="bg-white rounded-xl mb-4 shadow-sm w-[48%] overflow-hidden border border-gray-100"
               >
                 <Image
-                  source={{ uri: product.image }}
+                  source={{ uri: product?.images[0] }}
                   className="w-full h-24 rounded-t-xl"
                 />
                 <View className="p-2">
                   <View className="flex-row items-center">
                     <Text className="text-xs text-gray-500">
-                      {product.farmName}
+                      {product?.farmName}
                     </Text>
                     <View className="flex-row items-center ml-auto">
                       <Text className="text-xs text-yellow-500">★</Text>
-                      <Text className="text-xs ml-1">{product.rating}</Text>
+                      {/* <Text className="text-xs ml-1">{product.rating}</Text> */}
                     </View>
                   </View>
-                  <Text className="font-medium mt-1">{product.name}</Text>
+                  <Text className="font-medium mt-1">{product?.name}</Text>
                   <View className="flex-row justify-between items-center mt-2">
                     <Text className="font-bold text-agri-green-700">
-                      ${product.price}
+                      ${product?.price}
                     </Text>
                     <TouchableOpacity className="bg-agri-green-500 rounded-full w-7 h-7 items-center justify-center">
                       <Text className="text-white font-bold">+</Text>

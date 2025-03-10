@@ -111,6 +111,7 @@ export default function UserLayout() {
         // options={{ tabBarStyle: { display: "none" } }}
         options={{
           title: "Profile",
+          tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (
             <Feather name="user" size={24} color={color} />
           ),

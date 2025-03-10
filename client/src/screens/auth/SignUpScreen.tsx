@@ -17,9 +17,11 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/context/AuthContext";
 
 interface SignUpScreenProps {
   navigation: any;
+  type?: "buyer" | "farmer";
   //   route: {
   //     params: {
   //       userType: "farmer" | "buyer";
@@ -29,9 +31,12 @@ interface SignUpScreenProps {
 
 const { width, height } = Dimensions.get("window");
 
-const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
+const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation, type }) => {
   //   const { userType } = route.params;
-  const [userType, setUserType] = useState<"buyer" | "farmer">("buyer");
+  // const [userType, setUserType] = useState<"buyer" | "farmer">("buyer");
+  const userType = type;
+
+  const { onRegister } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -59,26 +64,22 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
     }
   }, [userType]);
 
-  const handleSignUp = () => {
-    if (!name || !email || !password || !confirmPassword) {
-      // Show error
+  async function handleSignUp() {
+    console.log("Signup btn pressed", name, email, password);
+    if (!name || !email || !password) {
+      alert("Please fill the form");
       return;
     }
 
-    if (password !== confirmPassword) {
-      // Show password mismatch error
-      return;
+    try {
+      const result = await onRegister!(name, email, password);
+      if (result) {
+        console.log("Signup result: ", result);
+      }
+    } catch (error) {
+      console.log("@# signup err:", error);
     }
-
-    setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to home screen after successful signup
-      // navigation.navigate('Home');
-    }, 1500);
-  };
+  }
 
   return (
     <View style={styles.container}>

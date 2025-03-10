@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 async function signup(req, res) {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, farmName } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: "Please fill in all fields" });
@@ -26,13 +26,14 @@ async function signup(req, res) {
       email,
       password: hashedPassword,
       role: userRole,
+      farmName: userRole === "farmer" ? farmName : "",
     });
     await user.save();
 
-    res.status(200).json({ message: "User created successfully", user });
+    return res.status(200).json({ message: "User created successfully", user });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Internal server error while creating user",
       error: error,
     });
@@ -54,12 +55,12 @@ async function login(req, res) {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-    res.status(200).json({
+    return res.status(200).json({
       token,
       user: { id: user._id, email: user.email, name: user.name },
     });
   } catch (error) {
-    res.status(500).json({ error: error });
+    return res.status(500).json({ error: error });
   }
 }
 

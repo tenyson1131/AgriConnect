@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema(
       enum: ["buyer", "farmer"],
       default: "buyer",
     },
+    farmName: { type: String, default: "" },
   },
   { timestamps: true }
 );

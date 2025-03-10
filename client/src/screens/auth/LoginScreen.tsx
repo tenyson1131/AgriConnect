@@ -13,10 +13,12 @@ import {
   StatusBar,
   Image,
   Dimensions,
+  ToastAndroid,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
+import Toast from "react-native-toast-message";
 
 interface LoginScreenProps {
   navigation: any;
@@ -39,13 +41,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       return;
     }
 
-    const result = await onLogin!(email, password);
-    if (result) {
-      console.log("login result: ", result.status);
-
-      if (result.status == 200) {
-        navigation.replace("/user");
+    try {
+      const result = await onLogin!(email, password);
+      if (result) {
+        console.log("login result: inside if", result);
+        if (result.error == true) {
+          Toast.show({
+            type: "error",
+            // text1: "Error",
+            text1: result.message,
+            position: "bottom",
+          });
+        }
+        if (result.status == 200) {
+          navigation.replace("/user");
+        }
       }
+    } catch (error) {
+      console.log("@# login err:", error);
     }
   }
 
