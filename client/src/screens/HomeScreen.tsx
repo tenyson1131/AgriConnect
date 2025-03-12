@@ -8,188 +8,416 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import {
-  Entypo,
-  Feather,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { Entypo, Feather, FontAwesome } from "@expo/vector-icons";
+import { RefreshControl } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 
 const categories = [
-  { id: 1, name: "Fruits", icon: "🍎" },
-  { id: 2, name: "Vegetables", icon: "🥦" },
-  { id: 3, name: "Dairy", icon: "🥛" },
-  { id: 4, name: "Meat", icon: "🥩" },
-  { id: 5, name: "Grain", icon: "🌾" },
+  {
+    id: 2,
+    name: "Vegetables",
+    img: require("../../assets/images/categories/vegetable.png"),
+  },
+  {
+    id: 1,
+    name: "Fruits",
+    img: require("../../assets/images/categories/fruit.png"),
+  },
+  {
+    id: 3,
+    name: "Dairy",
+    img: require("../../assets/images/categories/dairy.png"),
+  },
+  {
+    id: 4,
+    name: "Meat",
+    img: require("../../assets/images/categories/meat.png"),
+  },
+  {
+    id: 5,
+    name: "Grain",
+    img: require("../../assets/images/categories/grain.png"),
+  },
 ];
 
-// const products = [
-//   {
-//     id: 1,
-//     name: "Fresh Apples",
-//     price: 3.99,
-//     image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6",
-//     rating: 4.5,
-//     farmName: "Green Valley",
-//   },
-//   {
-//     id: 2,
-//     name: "Organic Tomatoes",
-//     price: 2.49,
-//     image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337",
-//     rating: 4.7,
-//     farmName: "Sunshine Farms",
-//   },
-//   {
-//     id: 3,
-//     name: "Farm Eggs",
-//     price: 4.99,
-//     image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f",
-//     rating: 4.8,
-//     farmName: "Happy Hens",
-//   },
-//   {
-//     id: 4,
-//     name: "Fresh Milk",
-//     price: 3.29,
-//     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b",
-//     rating: 4.6,
-//     farmName: "Dairy Delight",
-//   },
-// ];
+const HomeScreen = ({ products, fetchProducts }) => {
+  const [refreshing, setRefreshing] = React.useState(false);
 
-const HomeScreen = ({ products }) => {
-  console.log("@#HOMESCREEN Products: ", products);
-  const router = useRouter();
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    setRefreshing(false);
+  }, []);
+
+  const router = useRouter?.() || { push: () => {} };
+
   return (
-    <SafeAreaView className="flex-1 bg-white pb-16">
-      <ScrollView className="flex-1">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Location and Profile Section */}
-        <View className="flex-row justify-between items-center px-4 py-3">
-          <View className="flex-row items-center">
-            <Entypo name="location-pin" size={20} color="#5a9d42" />
-            <View className="ml-1">
-              <Text className="text-gray-500 text-xs">Your Location</Text>
-              <View className="flex-row items-center">
-                <Text className="font-semibold text-base">xuyASdz, ABC</Text>
-                <Feather name="chevron-down" size={16} color="#5a9d42" />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Entypo name="location-pin" size={22} color="#5a9d42" />
+            <View style={{ marginLeft: 8 }}>
+              <Text
+                style={{ color: "#9ca3af", fontSize: 12, letterSpacing: 0.4 }}
+              >
+                Your Location
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 2,
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "600",
+                    fontSize: 16,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  xuyASdz, ABC
+                </Text>
+                <Feather
+                  name="chevron-down"
+                  size={16}
+                  color="#5a9d42"
+                  style={{ marginLeft: 6 }}
+                />
               </View>
             </View>
           </View>
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: "rgba(185, 243, 214, 0.6)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onPress={() => router.push("/user/profile")}
           >
-            <Feather name="user" size={24} color="#888" />
+            <Feather name="user" size={24} color="#28a745" />
           </TouchableOpacity>
         </View>
 
         {/* Search and Filter */}
-        <View className="flex-row px-4 mb-4">
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-full px-4 py-2 mr-2">
-            <Feather name="search" size={20} color="#888" />
+        <View
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 16,
+            marginTop: 8,
+            marginBottom: 20,
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "rgba(243, 244, 246, 0.7)",
+              borderRadius: 24,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              marginRight: 12,
+            }}
+          >
+            <Feather name="search" size={20} color="#9ca3af" />
             <TextInput
               placeholder="Search fresh produce..."
-              className="flex-1 ml-2 text-base"
-              placeholderTextColor="#888"
+              style={{
+                flex: 1,
+                marginLeft: 10,
+                fontSize: 15,
+                fontWeight: "400",
+                color: "#1f2937",
+              }}
+              placeholderTextColor="#9ca3af"
             />
           </View>
-          <TouchableOpacity className="bg-agri-green-500 w-12 h-12 rounded-full items-center justify-center">
-            <Feather name="sliders" size={20} color="white" />
+          <TouchableOpacity
+            style={{
+              backgroundColor: "rgba(194, 239, 217, 0.35)",
+              width: 46,
+              height: 46,
+              borderRadius: 12,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FontAwesome name="sliders" size={22} color="#38b779" />
           </TouchableOpacity>
         </View>
 
         {/* Categories */}
-        <View className="mb-4">
-          <Text className="font-bold text-lg px-4 mb-3">Shop by Category</Text>
+        <View style={{ marginBottom: 24 }}>
+          <Text
+            style={{
+              fontWeight: "700",
+              fontSize: 18,
+              paddingHorizontal: 16,
+              marginBottom: 14,
+              letterSpacing: 0.2,
+            }}
+          >
+            Shop by Category
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            className="pl-4"
+            style={{ paddingLeft: 16 }}
           >
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                className="items-center mr-4 bg-gray-100 rounded-lg p-3 min-w-20"
+            {categories.map((category, i) => (
+              <View
+                key={i}
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 16,
+                }}
               >
-                <Text className="text-xl mb-1">{category.icon}</Text>
-                <Text className="font-medium">{category.name}</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    alignItems: "center",
+                    backgroundColor: "rgba(185, 243, 214, 0.5)",
+                    borderRadius: 16,
+                    padding: 14,
+                    minWidth: 80,
+                    // shadowColor: "#000",
+                    // shadowOffset: { width: 0, height: 2 },
+                    // shadowOpacity: 0.1,
+                    // shadowRadius: 3,
+                    // elevation: 2,
+                  }}
+                >
+                  <Image
+                    source={category.img}
+                    style={{ width: 46, height: 46 }}
+                  />
+                </TouchableOpacity>
+                <Text
+                  style={{
+                    fontWeight: "500",
+                    fontSize: 13,
+                    marginTop: 8,
+                    letterSpacing: 0.4,
+                    color: "#374151",
+                  }}
+                >
+                  {category.name}
+                </Text>
+              </View>
             ))}
           </ScrollView>
         </View>
 
         {/* Top Deals Banner */}
-        <View className="px-4 mb-4">
-          <View className="bg-agri-green-100 rounded-xl p-4s flex-rows items-betweens sjustify-center">
-            <View className="flex-1 flex-row justify-between borders">
-              <View className="borders">
-                <Text className="text-agri-green-800 font-bold text-lg">
+        <View style={{ paddingHorizontal: 16, marginBottom: 28 }}>
+          <View
+            style={{
+              backgroundColor: "#e0eeda",
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                padding: 16,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: "#3b662c",
+                    fontWeight: "700",
+                    fontSize: 18,
+                    letterSpacing: 0.3,
+                  }}
+                >
                   Top Deals of the Week
                 </Text>
-                <Text className="text-agri-green-700 mt-1s">
+                <Text
+                  style={{ color: "#488034", marginTop: 4, letterSpacing: 0.2 }}
+                >
                   Get up to 30% off on seasonal produce
                 </Text>
               </View>
-              <TouchableOpacity className="borders bg-agri-green-500 rounded-full px-4s spy-2 smt-2 self-start">
-                <Text className="text-black font-medium">Shop Now</Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#5a9d42",
+                  borderRadius: 24,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontWeight: "600", fontSize: 13 }}
+                >
+                  Shop Now
+                </Text>
               </TouchableOpacity>
             </View>
-            {/*  */}
-            <View className="mt-4">
+            <View>
               <Image
                 source={require("@/assets/images/dealsBanner.jpg")}
-                className="w-full h-40 rounded-lg"
+                style={{
+                  width: "100%",
+                  height: 160,
+                  borderBottomLeftRadius: 16,
+                  borderBottomRightRadius: 16,
+                }}
               />
             </View>
-
-            {/* <Image
-              source={{
-                uri: "https://img.freepik.com/free-vector/grocery-store-sale-banner-template_23-2151089846.jpg?t=st=1741505296~exp=1741508896~hmac=ee7e2b6fefb0e179ccdd014b90888aac0fac0c1e22c3bdfb46708ec59221e696&w=1060",
-              }}
-              className="w-20 h-20 rounded-lg"
-            /> */}
           </View>
         </View>
 
         {/* Top Selling */}
-        <View className="mb-4">
-          <View className="flex-row justify-between items-center px-4 mb-3">
-            <Text className="font-bold text-lg">Top Selling Products</Text>
+        <View style={{ marginBottom: 80 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              marginBottom: 16,
+            }}
+          >
+            <Text
+              style={{ fontWeight: "700", fontSize: 18, letterSpacing: 0.2 }}
+            >
+              Top Selling Products
+            </Text>
             <TouchableOpacity>
-              <Text className="text-agri-green-600 font-medium">See All</Text>
+              <Text
+                style={{
+                  color: "#5a9d42",
+                  fontWeight: "500",
+                  letterSpacing: 0.2,
+                }}
+              >
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <View className="px-4 flex-row flex-wrap justify-between">
+          <View
+            style={{
+              paddingHorizontal: 16,
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
             {products?.map((product) => (
               <TouchableOpacity
                 key={product?._id}
-                className="bg-white rounded-xl mb-4 shadow-sm w-[48%] overflow-hidden border border-gray-100"
+                className="w-[48%] mb-4 rounded-2xl overflow-hidden bg-white"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                  elevation: 3,
+                }}
+                onPress={() => router.push(`/product/${product?._id}`)}
               >
-                <Image
-                  source={{ uri: product?.images[0] }}
-                  className="w-full h-24 rounded-t-xl"
-                />
-                <View className="p-2">
-                  <View className="flex-row items-center">
-                    <Text className="text-xs text-gray-500">
-                      {product?.farmName}
-                    </Text>
-                    <View className="flex-row items-center ml-auto">
-                      <Text className="text-xs text-yellow-500">★</Text>
-                      {/* <Text className="text-xs ml-1">{product.rating}</Text> */}
+                {/* Image Container */}
+                <View className="h-40 w-full bg-gray-100">
+                  <Image
+                    source={{ uri: product?.images[0] }}
+                    className="w-full h-full"
+                    style={{ resizeMode: "cover" }}
+                  />
+
+                  {/* Discount Tag - Conditional */}
+                  {product?.discount > 0 && (
+                    <View className="absolute top-0 left-0 bg-red-500 px-2 py-1 rounded-br-lg">
+                      <Text className="text-xs font-bold text-white">
+                        {product?.discount}% OFF
+                      </Text>
                     </View>
-                  </View>
-                  <Text className="font-medium mt-1">{product?.name}</Text>
-                  <View className="flex-row justify-between items-center mt-2">
-                    <Text className="font-bold text-agri-green-700">
-                      ${product?.price}
+                  )}
+
+                  {/* Favorite Button */}
+                  <TouchableOpacity
+                    className="absolute top-2 right-2 bg-white w-8 h-8 rounded-full items-center justify-center"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 2,
+                      elevation: 2,
+                    }}
+                  >
+                    <Feather name="heart" size={15} color="#9ca3af" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Product Details */}
+                <View className="p-3">
+                  {/* Farm Name */}
+                  <View className="flex-row items-center mb-1">
+                    <View className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
+                    <Text className="text-xs text-gray-500">
+                      {product?.farmName || "Farm Fresh"}
                     </Text>
-                    <TouchableOpacity className="bg-agri-green-500 rounded-full w-7 h-7 items-center justify-center">
-                      <Text className="text-white font-bold">+</Text>
+                  </View>
+
+                  {/* Product Name */}
+                  <Text
+                    className="font-semibold text-gray-800 text-sm mb-2"
+                    numberOfLines={2}
+                    style={{ lineHeight: 18 }}
+                  >
+                    {product?.name}
+                  </Text>
+
+                  {/* Rating - if available */}
+                  {product?.rating && (
+                    <View className="flex-row items-center mb-2">
+                      <Feather name="star" size={12} color="#FFAB00" />
+                      <Text className="text-xs text-gray-600 ml-1">
+                        {product?.rating} ({product?.reviewCount || 0})
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Price and Add Button */}
+                  <View className="flex-row justify-between items-center">
+                    <View>
+                      {/* Show original price if discounted */}
+                      {product?.originalPrice && (
+                        <Text className="text-xs text-gray-400 line-through">
+                          ${product?.originalPrice}
+                        </Text>
+                      )}
+                      <Text className="font-bold text-gray-900 text-base">
+                        ${product?.price}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity className="bg-emerald-500 w-8 h-8 rounded-full items-center justify-center">
+                      <Text className="text-white font-bold text-base">+</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -198,28 +426,6 @@ const HomeScreen = ({ products }) => {
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      {/* <View className="absolute bottom-5s top-[680px] left-4 right-4 bg-white rounded-2xl shadow-lg py-3 px-2 flex-row justify-around">
-        <TouchableOpacity className="items-center">
-          <Feather name="home" size={24} color="#5a9d42" />
-          <Text className="text-xs mt-1 font-medium text-agri-green-500">
-            Home
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="tag" size={24} color="#888" />
-          <Text className="text-xs mt-1 text-gray-500">Deals</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="shopping-bag" size={24} color="#888" />
-          <Text className="text-xs mt-1 text-gray-500">Cart</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Feather name="user" size={24} color="#888" />
-          <Text className="text-xs mt-1 text-gray-500">Profile</Text>
-        </TouchableOpacity>
-      </View> */}
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-const Products = require("../models/Products");
+const Product = require("../models/Product");
 const User = require("../models/User");
 
 async function createProduct(req, res) {
@@ -20,7 +20,7 @@ async function createProduct(req, res) {
       return res.status(403).json({ message: "Only farmers can add products" });
     }
 
-    const product = new Products({
+    const product = new Product({
       name,
       desc,
       price,
@@ -46,9 +46,9 @@ async function createProduct(req, res) {
   }
 }
 
-async function fetchProduct(req, res) {
+async function fetchProducts(req, res) {
   try {
-    const products = await Products.find();
+    const products = await Product.find();
     return res.status(200).json({ products });
   } catch (error) {
     console.log("error while fetching product", error);
@@ -59,4 +59,34 @@ async function fetchProduct(req, res) {
   }
 }
 
-module.exports = { createProduct, fetchProduct };
+async function getProductById(req, res) {
+  const { id } = req.params;
+  console.log("type id:", typeof id);
+
+  if (!id) {
+    console.log("no product id found in request");
+    return res
+      .status(400)
+      .json({ message: "Product id not found in request param" });
+  }
+
+  try {
+    console.log("product id: ", id);
+
+    const product = await Product.findOne({ _id: id });
+    console.log("first product: ", product);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.status(200).json({ product });
+  } catch (error) {
+    console.log("error while fetching product by id", error);
+    return res.status(500).json({
+      message: "Internal server error while fetching product by id",
+      error: error,
+    });
+  }
+}
+
+module.exports = { createProduct, fetchProducts, getProductById };

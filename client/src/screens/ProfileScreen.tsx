@@ -1,326 +1,302 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
-  ScrollView,
   Image,
   TouchableOpacity,
+  ScrollView,
   StatusBar,
+  SafeAreaView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 
-const ProfileScreen = () => {
-  const [activeTab, setActiveTab] = useState("posts");
+const ProfileScreen = ({ handleLogout }) => {
+  // Mock user data
+  const user = {
+    name: "User 1 (hardcoded)",
+    email: "User.User@example.com",
+    profileImage: "https://randomuser.me/api/portraits/women/44.jpg",
+    level: "Gold Member",
+    points: 2350,
+  };
 
-  const stats = [
-    { label: "Orders", value: "24" },
-    { label: "Reviews", value: "12" },
-    { label: "Points", value: "1.4k" },
-  ];
-
-  const menuItems = [
-    { icon: "settings", label: "Account Settings" },
-    { icon: "bell", label: "Notifications" },
-    { icon: "shopping-bag", label: "My Orders" },
-    { icon: "heart", label: "Saved Items" },
-    { icon: "credit-card", label: "Payment Methods" },
-    { icon: "headphones", label: "Help Center" },
-    { icon: "log-out", label: "Log Out" },
-  ];
+  const router = useRouter();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="transparent"
-        translucent
-      />
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
 
-      {/* Header */}
-      <View
-        className="items-center gap-5"
-        style={{
-          flexDirection: "row",
-          //   justifyContent: "space-between",
-          paddingHorizontal: 20,
-          paddingTop: 10,
-        }}
-      >
-        <TouchableOpacity
-        //   style={styles.backButton}
-        //   onPress={() => navigation.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 24, fontWeight: "700" }}>Profile</Text>
-        {/* <TouchableOpacity
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#f1f5f9",
-          }}
-        >
-          <Feather name="edit-2" size={18} color="#5a9d42" />
-        </TouchableOpacity> */}
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }} // Extra padding for tab bar
-      >
-        {/* Profile Card */}
-        <View style={{ marginTop: 20, marginHorizontal: 20 }}>
-          <View
-            style={{
-              backgroundColor: "white",
-              borderRadius: 24,
-              padding: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 5,
-            }}
-          >
-            {/* Background gradient banner */}
-            <View
-              style={{
-                height: 80,
-                backgroundColor: "#5a9d42",
-                borderRadius: 16,
-                marginBottom: 40,
-                overflow: "hidden",
-              }}
-            >
-              <View
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "#7bb364",
-                  transform: [{ rotate: "15deg" }, { scale: 1.5 }],
-                  opacity: 0.5,
-                }}
-              />
-            </View>
-
-            {/* Profile image */}
-            <View
-              style={{
-                position: "absolute",
-                top: 40,
-                alignSelf: "center",
-                backgroundColor: "white",
-                padding: 4,
-                borderRadius: 60,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-                elevation: 5,
-              }}
-            >
-              <Image
-                source={{
-                  uri: "https://www.pngplay.com/wp-content/uploads/12/User-Avatar-Profile-Clip-Art-Transparent-PNG.png",
-                }}
-                style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  borderWidth: 3,
-                  borderColor: "white",
-                }}
-              />
-            </View>
-
-            {/* Profile info */}
-            <View style={{ alignItems: "center", marginTop: 10 }}>
-              <Text
-                style={{ fontSize: 22, fontWeight: "700", marginBottom: 4 }}
-              >
-                User's Name
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 8,
-                }}
-              >
-                <Feather
-                  name="map-pin"
-                  size={14}
-                  color="#9ca3af"
-                  style={{ marginRight: 4 }}
-                />
-                <Text style={{ color: "#9ca3af", fontSize: 14 }}>
-                  State, city
-                </Text>
-              </View>
-              <Text
-                style={{
-                  textAlign: "center",
-                  paddingHorizontal: 20,
-                  color: "#4b5563",
-                  marginBottom: 16,
-                }}
-              >
-                Food enthusiast and organic farming supporter. Always on the
-                lookout for fresh local produce.
-              </Text>
-
-              {/* Connect button */}
+      {/* Custom Header with Curved Bottom */}
+      <View className="relative">
+        <LinearGradient colors={["#f3f4f6", "#ffffff"]} className="pt-4 pb-16">
+          <View className="px-6 flex-row justify-between items-center">
+            <View className="flex-row items-center">
               <TouchableOpacity
-                style={{
-                  backgroundColor: "#5a9d42",
-                  paddingHorizontal: 24,
-                  paddingVertical: 10,
-                  borderRadius: 30,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
+                className="mr-3 w-10 h-10items-center justify-center "
+                onPress={() => router.back()} // Navigate back
               >
-                <Feather
-                  name="user-plus"
-                  size={16}
-                  color="white"
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{ color: "white", fontWeight: "600", fontSize: 14 }}
-                >
-                  Edit Profile
-                </Text>
+                <Feather name="arrow-left" size={20} />
+              </TouchableOpacity>
+              <Text className="font-bold text-2xl text-gray-800">Profile</Text>
+            </View>
+            <View className="flex-row">
+              <TouchableOpacity className="mr-4 w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm">
+                <Feather name="bell" size={18} color="#4b5563" />
+              </TouchableOpacity>
+              <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm">
+                <Feather name="settings" size={18} color="#4b5563" />
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
-        {/* Stats cards */}
-        {/* <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginHorizontal: 20,
-            marginTop: 20,
-          }}
-        >
-          {stats.map((stat, index) => (
-            <View
-              key={index}
-              style={{
-                backgroundColor: "white",
-                borderRadius: 16,
-                padding: 12,
-                flex: 1,
-                marginHorizontal: 5,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-                elevation: 2,
-              }}
-            >
-              <Text
-                style={{ fontSize: 20, fontWeight: "700", color: "#5a9d42" }}
-              >
-                {stat.value}
-              </Text>
-              <Text style={{ color: "#6b7280", fontSize: 12 }}>
-                {stat.label}
-              </Text>
+        {/* Oval bottom edge */}
+        <View
+          className="absolute -bottom-6 left-0 right-0 h-12 bg-gray-50"
+          style={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
+        />
+
+        {/* Floating Profile Card */}
+        <View className="absolute left-6 right-6 bottom-0 transform translate-y-1/2 z-10">
+          <View className="bg-white rounded-2xl p-5 shadow-md flex-row items-center border border-gray-100">
+            {/* Profile Image with Level Ring */}
+            <View className="relative">
+              <View className="w-20 h-20 rounded-full border-2 border-emerald-400 p-1">
+                <Image
+                  source={{ uri: user.profileImage }}
+                  className="w-full h-full rounded-full"
+                />
+              </View>
+              <View className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full px-2 py-1 border border-white">
+                <Text className="text-xs font-bold text-white">Lvl 3</Text>
+              </View>
             </View>
-          ))}
-        </View> */}
 
-        {/* Menu list */}
-        <View style={{ marginTop: 24, marginHorizontal: 20 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              marginBottom: 16,
-              marginLeft: 4,
-            }}
-          >
-            Settings
-          </Text>
-          <View
-            style={{
-              backgroundColor: "white",
-              borderRadius: 24,
-              overflow: "hidden",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              elevation: 3,
-            }}
-          >
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: 16,
-                  paddingHorizontal: 20,
-                  borderBottomWidth: index === menuItems.length - 1 ? 0 : 1,
-                  borderBottomColor: "#f3f4f6",
-                }}
-              >
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 12,
-                    backgroundColor:
-                      index === menuItems.length - 1 ? "#fee2e2" : "#f1f5f9",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                  }}
-                >
-                  <Feather
-                    name={item.icon as any}
-                    size={18}
-                    color={
-                      index === menuItems.length - 1 ? "#ef4444" : "#5a9d42"
-                    }
+            <View className="ml-4 flex-1">
+              <Text className="font-bold text-lg text-gray-800">
+                {user.name}
+              </Text>
+              <Text className="text-gray-500 text-sm mb-1">{user.email}</Text>
+
+              {/* Points Progress */}
+              <View className="mt-1">
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-xs text-gray-500">Rewards Points</Text>
+                  <Text className="text-xs font-medium text-emerald-600">
+                    {user.points}/3000
+                  </Text>
+                </View>
+                <View className="h-1.5 bg-gray-200 rounded-full w-full overflow-hidden">
+                  <View
+                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"
+                    style={{ width: `${(user.points / 3000) * 100}%` }}
                   />
                 </View>
-                <Text
-                  style={{
-                    flex: 1,
-                    fontSize: 16,
-                    fontWeight: index === menuItems.length - 1 ? "600" : "500",
-                    color:
-                      index === menuItems.length - 1 ? "#ef4444" : "#1f2937",
-                  }}
-                >
-                  {item.label}
-                </Text>
-                <Feather name="chevron-right" size={20} color="#9ca3af" />
-              </TouchableOpacity>
-            ))}
+              </View>
+            </View>
+
+            <TouchableOpacity className="ml-2 p-2">
+              <Feather name="edit-2" size={18} color="#9ca3af" />
+            </TouchableOpacity>
           </View>
         </View>
+      </View>
 
-        {/* App info */}
-        <View
-          style={{ marginTop: 20, alignItems: "center", paddingBottom: 20 }}
-        >
-          <Text style={{ color: "#9ca3af", fontSize: 12 }}>
-            App version 1.0.0
-          </Text>
+      {/* Main Content */}
+      <ScrollView
+        className="flex-1 pt-24s pt-10 mt-5"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Stats Cards Row */}
+        <View className="flex-row justify-between px-6 mt-4 mb-6">
+          {[
+            { label: "Orders", value: "27", icon: "package", color: "#818cf8" },
+            { label: "Wishlist", value: "19", icon: "heart", color: "#f87171" },
+            { label: "Coupons", value: "8", icon: "gift", color: "#fbbf24" },
+          ].map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              className="bg-white p-3 rounded-2xl shadow-sm items-center justify-center"
+              style={{ width: "30%" }}
+            >
+              <View
+                className="w-10 h-10 rounded-full mb-2 items-center justify-center"
+                style={{ backgroundColor: `${item.color}20` }}
+              >
+                <Feather name={item.icon} size={18} color={item.color} />
+              </View>
+              <Text className="font-bold text-lg text-gray-800">
+                {item.value}
+              </Text>
+              <Text className="text-xs text-gray-500">{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Menu Sections */}
+        <View className="px-6 mb-6">
+          {/* My Shopping Section */}
+          <View className="mb-6">
+            <Text className="text-sm font-semibold text-gray-800 mb-3 px-1">
+              MY SHOPPING
+            </Text>
+            <View className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              {[
+                {
+                  icon: "shopping-bag",
+                  label: "Orders",
+                  description: "Track, return or buy again",
+                },
+                {
+                  icon: "credit-card",
+                  label: "Payment Methods",
+                  description: "Manage your cards and wallets",
+                },
+                {
+                  icon: "map-pin",
+                  label: "Addresses",
+                  description: "Your saved delivery locations",
+                },
+              ].map((item, index, array) => (
+                <TouchableOpacity
+                  key={index}
+                  className={`flex-row items-center p-4 ${
+                    index !== array.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
+                >
+                  <View
+                    className="w-10 h-10 rounded-full items-center justify-center"
+                    style={{
+                      backgroundColor:
+                        index === 0
+                          ? "#10b98120"
+                          : index === 1
+                          ? "#6366f120"
+                          : "#f59e0b20",
+                    }}
+                  >
+                    <Feather
+                      name={item.icon}
+                      size={18}
+                      color={
+                        index === 0
+                          ? "#10b981"
+                          : index === 1
+                          ? "#6366f1"
+                          : "#f59e0b"
+                      }
+                    />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="font-medium text-gray-800">
+                      {item.label}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                      {item.description}
+                    </Text>
+                  </View>
+                  <Feather name="chevron-right" size={18} color="#9ca3af" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Preferences Section */}
+          <View className="mb-6">
+            <Text className="text-sm font-semibold text-gray-800 mb-3 px-1">
+              PREFERENCES
+            </Text>
+            <View className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              {[
+                { icon: "bell", label: "Notifications", toggle: true },
+                { icon: "globe", label: "Language", value: "English (US)" },
+                { icon: "shield", label: "Privacy", chevron: true },
+              ].map((item, index, array) => (
+                <TouchableOpacity
+                  key={index}
+                  className={`flex-row items-center p-4 ${
+                    index !== array.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
+                >
+                  <View className="w-10 h-10 rounded-full items-center justify-center bg-gray-100">
+                    <Feather name={item.icon} size={18} color="#4b5563" />
+                  </View>
+                  <Text className="ml-3 flex-1 font-medium text-gray-800">
+                    {item.label}
+                  </Text>
+
+                  {item.value && (
+                    <Text className="text-gray-500 text-sm">{item.value}</Text>
+                  )}
+
+                  {item.toggle && (
+                    <View className="w-12 h-6 bg-emerald-100 rounded-full px-0.5 items-center flex-row">
+                      <View className="w-5 h-5 bg-emerald-500 rounded-full shadow-sm ml-auto" />
+                    </View>
+                  )}
+
+                  {item.chevron && (
+                    <Feather name="chevron-right" size={18} color="#9ca3af" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Help Section */}
+          <View className="mb-10">
+            <Text className="text-sm font-semibold text-gray-800 mb-3 px-1">
+              HELP & SUPPORT
+            </Text>
+            <View className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              {[
+                {
+                  icon: "help-circle",
+                  label: "Help Center",
+                  description: "FAQs and customer support",
+                },
+                {
+                  icon: "message-circle",
+                  label: "Live Chat",
+                  description: "Talk to our support team",
+                },
+              ].map((item, index, array) => (
+                <TouchableOpacity
+                  key={index}
+                  className={`flex-row items-center p-4 ${
+                    index !== array.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
+                >
+                  <View className="w-10 h-10 rounded-full items-center justify-center bg-gray-100">
+                    <Feather name={item.icon} size={18} color="#4b5563" />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="font-medium text-gray-800">
+                      {item.label}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                      {item.description}
+                    </Text>
+                  </View>
+                  <Feather name="chevron-right" size={18} color="#9ca3af" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Sign Out Button */}
+          <TouchableOpacity className="mb-10" onPress={handleLogout}>
+            <LinearGradient
+              colors={["#fde8e8", "#fecaca"]} // Soft pastel red gradient
+              className="py-4 rounded-sm border border-red-300 shadow-sm"
+            >
+              <Text className="font-medium text-center text-red-700">
+                Sign Out
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
