@@ -27,6 +27,7 @@ const productSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  farmName: { type: String, required: true },
   location: {
     country: { type: String, required: true },
     state: { type: String, required: true },

@@ -8,30 +8,39 @@ export default function index() {
   const { id } = useLocalSearchParams();
 
   const [loading, setLoading] = useState(true);
-  // const [productDetail, setProductDetail] = useState({});
-  // useEffect(() => {
-  // //   async function getProductDetail() {
-  // //     setLoading(true);
-  // //     try {
-  // //       const res = await axios.get(
-  // //         `${process.env.EXPO_PUBLIC_SERVER_URL}/api/product/get-product-detail/${id}`
-  // //       );
+  const [productDetail, setProductDetail] = useState({});
+  useEffect(() => {
+    async function getProductDetail() {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_SERVER_URL}/api/product/get-product-detail/${id}`
+        );
 
-  // //       console.log("product detail res: ", res);
-  // //     } catch (error) {
-  // //       console.log("err while fetching product detail", error);
-  // //     } finally {
-  // //       setLoading(false);
-  // //     }
-  // //   }
+        console.log("product detail res: ", res);
 
-  // //   getProductDetail();
-  // // }, []);
+        if (res?.status == 200) {
+          setProductDetail(res?.data?.product);
+        }
+      } catch (error) {
+        console.log("err while fetching product detail", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getProductDetail();
+  }, []);
 
   return (
     // <ScrollView >
     // <Text>{loading ? "Loading....." : "  Product detail page:{id}"}</Text>
-    <ProductDetailScreen />
+    loading ? (
+      <Text>Loading.....</Text>
+    ) : (
+      <ProductDetailScreen productDetail={productDetail} />
+    )
+    // <ProductDetailScreen />
     // </ScrollView >
   );
 }

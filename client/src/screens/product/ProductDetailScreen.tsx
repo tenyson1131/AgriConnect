@@ -11,55 +11,37 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { ProductInterface } from "@/src/types";
+import { productTips_benefits } from "./tips_benefits";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
-const ProductDetailScreen = ({ navigation, route }) => {
+const ProductDetailScreen = ({
+  productDetail,
+}: {
+  productDetail: ProductInterface;
+}) => {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  // In a real app, you would get this data from route.params or an API
-  const product = {
-    id: 1,
-    name: "Organic Spinach Leaf",
-    price: 3.99,
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
-    rating: 4.8,
-    reviews: 245,
-    farmName: "Green Valley Farms",
-    description:
-      "Spinach (Spinacia oleracea) is a leafy green vegetable that originated in Persia. It belongs to the amaranth family. It has tender, edible leaves which can be eaten raw or cooked. Spinach is rich in iron, vitamins, and antioxidants.",
-    benefits: [
-      "Rich in vitamins A, C, and K",
-      "High iron content",
-      "Excellent source of antioxidants",
-      "Supports eye health",
-      "Helps reduce blood pressure",
-    ],
-    tips: [
-      {
-        title: "Temperature",
-        value: "18-25°C",
-        icon: "thermometer",
-      },
-      {
-        title: "Freshness",
-        value: "1 hour",
-        icon: "clock",
-      },
-      {
-        title: "Size",
-        value: "30 ML",
-        icon: "droplet",
-      },
-    ],
-  };
 
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const toggleFavorite = () => setIsFavorite((prev) => !prev);
+
+  // multiple product images
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const tips =
+    productTips_benefits[productDetail?.category]?.tips ||
+    productTips_benefits["Vegetables"].tips;
+  const benefits =
+    productTips_benefits[productDetail?.category]?.benefits ||
+    productTips_benefits["Vegetables"].benefits;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -71,7 +53,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
         {/* Header */}
         <View className="flex-row justify-between items-center px-4 py-3 absolute top-0 left-0 right-0 z-10">
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => router.back()}
             className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
           >
             <Feather name="arrow-left" size={20} color="#333" />
@@ -81,37 +63,73 @@ const ProductDetailScreen = ({ navigation, route }) => {
             className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
           >
             <Feather
-              name={isFavorite ? "heart" : "heart"}
+              name="heart"
               size={20}
               color={isFavorite ? "#FF6B6B" : "#666"}
+              solid={isFavorite}
             />
           </TouchableOpacity>
         </View>
 
         {/* Product Image with Gradient */}
-        <View className="w-full aspect-square relative">
-          <LinearGradient
-            colors={["rgba(242, 248, 240, 1)", "rgba(255, 255, 255, .8)"]}
-            className="absolute inset-0"
-          />
-          <Image
-            source={{ uri: product.image }}
-            className="w-full h-full p-8"
-            resizeMode="contain"
-          />
+        <GestureHandlerRootView>
+          <View className="w-full aspect-square relative">
+            <FlatList
+              data={productDetail.images}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onViewableItemsChanged={({ viewableItems }) => {
+                if (viewableItems.length > 0) {
+                  setActiveIndex(viewableItems[0].index || 0);
+                }
+              }}
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: 50,
+              }}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    width: Dimensions.get("window").width,
+                    aspectRatio: 1,
+                  }}
+                >
+                  <LinearGradient
+                    colors={[
+                      "rgba(242, 248, 240, 1)",
+                      "rgba(255, 255, 255, .8)",
+                    ]}
+                    className="absolute inset-0"
+                  />
+                  <Image
+                    source={{ uri: item }}
+                    className="w-full h-full p-8"
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+            />
 
-          {/* Organic Badge */}
-          <View className="absolute left-4 bottom-4 bg-[#5a9d42] rounded-full w-10 h-10 items-center justify-center">
-            <Feather name="check" size={18} color="white" />
-          </View>
+            {/* Organic Badge */}
+            <View className="absolute left-4 bottom-4 bg-gray-800 rounded-full w-10 h-10 items-center justify-center">
+              <Feather name="check" size={18} color="white" />
+            </View>
 
-          {/* Page indicator dots */}
-          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
-            <View className="h-1.5 w-6 rounded-full bg-[#5a9d42] mx-0.5" />
-            <View className="h-1.5 w-1.5 rounded-full bg-gray-300 mx-0.5" />
-            <View className="h-1.5 w-1.5 rounded-full bg-gray-300 mx-0.5" />
+            {/* Page indicator dots */}
+            <View className="absolute bottom-4 left-0 right-0 flex-row justify-center">
+              {productDetail.images.map((_, index) => (
+                <View
+                  key={index}
+                  className={`h-1.5 rounded-full mx-0.5 ${
+                    activeIndex === index
+                      ? "w-6 bg-gray-800"
+                      : "w-1.5 bg-gray-300"
+                  }`}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        </GestureHandlerRootView>
 
         {/* Product Info Container */}
         <View className="px-5 pt-6 pb-24">
@@ -119,32 +137,28 @@ const ProductDetailScreen = ({ navigation, route }) => {
           <View className="flex-row justify-between items-start mb-4">
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-800 tracking-tight mb-1">
-                {product.name}
+                {productDetail?.name}
               </Text>
-              <Text className="text-[#5a9d42] font-medium text-base">
-                {product.farmName}
+              <Text className="text-gray-600 font-medium text-base">
+                {productDetail?.farmName}
               </Text>
             </View>
-            <View className="bg-[#f3f8f0] rounded-xl px-3 py-1.5">
+            <View className="bg-gray-100 rounded-xl px-3 py-1.5">
               <View className="flex-row items-center">
                 <Feather name="star" size={16} color="#f59e0b" />
-                <Text className="font-semibold ml-1 mr-0.5">
-                  {product.rating}
-                </Text>
-                <Text className="text-gray-500 text-xs">
-                  ({product.reviews})
-                </Text>
+                <Text className="font-semibold ml-1 mr-0.5">4.8</Text>
+                <Text className="text-gray-500 text-xs">(242)</Text>
               </View>
             </View>
           </View>
 
-          {/* Price and Add to Cart Section (Moved from bottom) */}
-          <View className="bg-[#f7f9f5] rounded-2xl p-4 mb-6">
+          {/* Price and Add to Cart Section */}
+          <View className="bg-gray-50 rounded-2xl p-4 mb-6">
             <View className="flex-row justify-between items-center">
               <View>
                 <Text className="text-gray-500 text-sm">Price</Text>
-                <Text className="text-2xl font-bold text-[#5a9d42]">
-                  ${product.price}
+                <Text className="text-2xl font-bold text-gray-800">
+                  ₹{productDetail?.price}
                 </Text>
               </View>
 
@@ -155,7 +169,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
                     onPress={decreaseQuantity}
                     className="w-8 h-8 rounded-full items-center justify-center"
                   >
-                    <Feather name="minus" size={16} color="#5a9d42" />
+                    <Feather name="minus" size={16} color="#333" />
                   </TouchableOpacity>
                   <Text className="w-8 text-center font-semibold">
                     {quantity}
@@ -164,12 +178,12 @@ const ProductDetailScreen = ({ navigation, route }) => {
                     onPress={increaseQuantity}
                     className="w-8 h-8 rounded-full items-center justify-center"
                   >
-                    <Feather name="plus" size={16} color="#5a9d42" />
+                    <Feather name="plus" size={16} color="#333" />
                   </TouchableOpacity>
                 </View>
 
                 {/* Add to Basket Button */}
-                <TouchableOpacity className="bg-[#5a9d42] rounded-full py-3 px-5 shadow-md">
+                <TouchableOpacity className="bg-gray-800 rounded-full py-3 px-5 shadow-sm">
                   <Feather name="shopping-bag" size={18} color="white" />
                 </TouchableOpacity>
               </View>
@@ -181,8 +195,8 @@ const ProductDetailScreen = ({ navigation, route }) => {
             <Text className="text-lg font-semibold text-gray-800 mb-2">
               Description
             </Text>
-            <Text className="text-gray-600 leading-6 tracking-wide">
-              {product.description}
+            <Text className="text-gray-600 leading-6">
+              {productDetail?.desc}
             </Text>
           </View>
 
@@ -191,34 +205,35 @@ const ProductDetailScreen = ({ navigation, route }) => {
             <Text className="text-lg font-semibold text-gray-800 mb-3">
               Health Benefits
             </Text>
-            <View className="bg-[#f7f9f5] rounded-2xl p-4">
-              {product.benefits.map((benefit, index) => (
+            <View className="bg-gray-50 rounded-2xl p-4">
+              {benefits?.map((benefit, index) => (
                 <View key={index} className="flex-row items-center mb-2">
-                  <View className="w-2 h-2 rounded-full bg-[#5a9d42] mr-3" />
+                  <View className="w-2 h-2 rounded-full bg-gray-800 mr-3" />
                   <Text className="text-gray-700">{benefit}</Text>
                 </View>
               ))}
             </View>
           </View>
 
-          {/* Tips Section */}
+          {/* Tips Section - Flatter design */}
           <View className="mb-6">
             <Text className="text-lg font-semibold text-gray-800 mb-3">
               Tips to keep it fresh
             </Text>
             <View className="flex-row justify-between">
-              {product.tips.map((tip, index) => (
-                <View
-                  key={index}
-                  className="bg-[#f3f8f0] rounded-2xl p-4 w-[31%] items-center"
-                >
-                  <View className="w-10 h-10 rounded-full bg-[#5a9d42] items-center justify-center mb-2">
-                    <Feather name={tip.icon} size={18} color="white" />
+              {tips.map((tip, index) => (
+                <View key={index} className="bg-gray-50 rounded-xl p-3 w-[31%]">
+                  <View className="flex-row items-center justify-center mb-1">
+                    <Feather
+                      name={tip.icon as keyof typeof Feather.glyphMap}
+                      size={16}
+                      color="#333"
+                    />
                   </View>
-                  <Text className="text-gray-500 text-xs mb-1">
+                  <Text className="text-gray-500 text-center text-xs mb-0.5">
                     {tip.title}
                   </Text>
-                  <Text className="font-semibold text-gray-800">
+                  <Text className="font-medium text-center text-gray-800 text-sm">
                     {tip.value}
                   </Text>
                 </View>
@@ -226,7 +241,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Related Products Section */}
+          {/* Related Products Section - Improved design */}
           <View>
             <Text className="text-lg font-semibold text-gray-800 mb-3">
               You might also like
@@ -234,31 +249,41 @@ const ProductDetailScreen = ({ navigation, route }) => {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="flex-row"
               contentContainerStyle={{ paddingRight: 20 }}
             >
               {[1, 2, 3].map((item) => (
-                <View
+                <TouchableOpacity
                   key={item}
-                  className="bg-white rounded-2xl shadow-sm p-3 mr-4 w-32"
+                  className="bg-gray-50 rounded-xl mr-3 w-36 overflow-hidden"
                 >
-                  <View className="bg-[#f7f9f5] rounded-xl p-2 mb-2">
-                    <Image
-                      source={{
-                        uri: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
-                      }}
-                      className="w-full h-20"
-                      resizeMode="contain"
-                    />
+                  <Image
+                    source={{
+                      uri: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
+                    }}
+                    className="w-full h-24 bg-white"
+                    resizeMode="cover"
+                  />
+                  <View className="p-2">
+                    <Text
+                      className="font-medium text-gray-800 text-sm"
+                      numberOfLines={1}
+                    >
+                      {item === 1
+                        ? "Organic Kale"
+                        : item === 2
+                        ? "Fresh Lettuce"
+                        : "Wild Arugula"}
+                    </Text>
+                    <View className="flex-row justify-between items-center mt-1">
+                      <Text className="text-gray-800 font-semibold text-sm">
+                        ${(2.99 + item * 0.5).toFixed(2)}
+                      </Text>
+                      <TouchableOpacity className="bg-gray-200 rounded-full w-6 h-6 items-center justify-center">
+                        <Feather name="plus" size={14} color="#333" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                  <Text className="font-medium text-gray-800" numberOfLines={2}>
-                    Organic{" "}
-                    {item === 1 ? "Kale" : item === 2 ? "Lettuce" : "Arugula"}
-                  </Text>
-                  <Text className="text-[#5a9d42] font-semibold mt-1">
-                    ${(2.99 + item * 0.5).toFixed(2)}
-                  </Text>
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>

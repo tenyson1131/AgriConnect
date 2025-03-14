@@ -182,49 +182,46 @@ const HomeScreen = ({ products, fetchProducts }) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{ paddingLeft: 16 }}
+            // style={{ paddingLeft: 16 }}
           >
-            {categories.map((category, i) => (
-              <View
-                key={i}
-                style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginRight: 16,
-                }}
-              >
-                <TouchableOpacity
+            <View className="flex-row pl-5 pr-2">
+              {categories.map((category, i) => (
+                <View
+                  key={i}
                   style={{
+                    justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "rgba(185, 243, 214, 0.5)",
-                    borderRadius: 16,
-                    padding: 14,
-                    minWidth: 80,
-                    // shadowColor: "#000",
-                    // shadowOffset: { width: 0, height: 2 },
-                    // shadowOpacity: 0.1,
-                    // shadowRadius: 3,
-                    // elevation: 2,
+                    marginRight: 16,
                   }}
                 >
-                  <Image
-                    source={category.img}
-                    style={{ width: 46, height: 46 }}
-                  />
-                </TouchableOpacity>
-                <Text
-                  style={{
-                    fontWeight: "500",
-                    fontSize: 13,
-                    marginTop: 8,
-                    letterSpacing: 0.4,
-                    color: "#374151",
-                  }}
-                >
-                  {category.name}
-                </Text>
-              </View>
-            ))}
+                  <TouchableOpacity
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: "rgba(185, 243, 214, 0.5)",
+                      borderRadius: 16,
+                      padding: 14,
+                      minWidth: 80,
+                    }}
+                  >
+                    <Image
+                      source={category.img}
+                      style={{ width: 46, height: 46 }}
+                    />
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontWeight: "500",
+                      fontSize: 13,
+                      marginTop: 8,
+                      letterSpacing: 0.4,
+                      color: "#374151",
+                    }}
+                  >
+                    {category.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </ScrollView>
         </View>
 
