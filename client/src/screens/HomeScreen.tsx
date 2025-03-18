@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -11,36 +11,45 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo, Feather, FontAwesome } from "@expo/vector-icons";
 import { RefreshControl } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
+import { ProductContext } from "@/context/ProductContext";
 
 const categories = [
   {
     id: 2,
     name: "Vegetables",
+    paramName: "Vegetables",
     img: require("../../assets/images/categories/vegetable.png"),
   },
   {
     id: 1,
     name: "Fruits",
+    paramName: "Fruits",
     img: require("../../assets/images/categories/fruit.png"),
   },
   {
     id: 3,
     name: "Dairy",
+    paramName: "Dairy",
     img: require("../../assets/images/categories/dairy.png"),
   },
   {
     id: 4,
     name: "Meat",
+    paramName: "Meat",
     img: require("../../assets/images/categories/meat.png"),
   },
   {
     id: 5,
-    name: "Grain",
+    // name: "Grain",
+    name: "Pickles",
+    paramName: "Handmade Pickles",
     img: require("../../assets/images/categories/grain.png"),
   },
 ];
 
-const HomeScreen = ({ products, fetchProducts }) => {
+const HomeScreen = () => {
+  const { products, fetchProducts } = useContext(ProductContext);
+
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = React.useCallback(async () => {
@@ -202,6 +211,11 @@ const HomeScreen = ({ products, fetchProducts }) => {
                       padding: 14,
                       minWidth: 80,
                     }}
+                    onPress={() =>
+                      router.push(
+                        `/user/category?category=${category.paramName}`
+                      )
+                    }
                   >
                     <Image
                       source={category.img}
@@ -325,7 +339,7 @@ const HomeScreen = ({ products, fetchProducts }) => {
               justifyContent: "space-between",
             }}
           >
-            {products.length > 0 ? (
+            {products?.length > 0 ? (
               products?.map((product) => (
                 <TouchableOpacity
                   key={product?._id}

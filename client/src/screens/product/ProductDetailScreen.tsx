@@ -117,7 +117,7 @@ const ProductDetailScreen = ({
         bounces={false}
       >
         {/* Header */}
-        <View className="flex-row justify-between items-center px-4 py-3 absolute top-0 left-0 right-0 z-10">
+        <View className="flex-row justify-between items-center px-4 py-3 absolute top-10 left-0 right-0 z-10">
           <TouchableOpacity
             onPress={() => router?.back()}
             className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"

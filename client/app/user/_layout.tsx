@@ -108,6 +108,17 @@ export default function UserLayout() {
         }}
       />
       <Tabs.Screen
+        name="category"
+        // options={{ tabBarStyle: { display: "none" } }}
+        options={{
+          title: "Category",
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color }) => (
+            <Feather name="user" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         // options={{ tabBarStyle: { display: "none" } }}
         options={{
