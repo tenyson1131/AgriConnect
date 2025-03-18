@@ -325,101 +325,107 @@ const HomeScreen = ({ products, fetchProducts }) => {
               justifyContent: "space-between",
             }}
           >
-            {products?.map((product) => (
-              <TouchableOpacity
-                key={product?._id}
-                className="w-[48%] mb-4 rounded-2xl overflow-hidden bg-white"
-                style={{
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 8,
-                  elevation: 3,
-                }}
-                onPress={() => router.push(`/product/${product?._id}`)}
-              >
-                {/* Image Container */}
-                <View className="h-40 w-full bg-gray-100">
-                  <Image
-                    source={{ uri: product?.images[0] }}
-                    className="w-full h-full"
-                    style={{ resizeMode: "cover" }}
-                  />
+            {products.length > 0 ? (
+              products?.map((product) => (
+                <TouchableOpacity
+                  key={product?._id}
+                  className="w-[48%] mb-4 rounded-2xl overflow-hidden bg-white"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }}
+                  onPress={() => router.push(`/product/${product?._id}`)}
+                >
+                  {/* Image Container */}
+                  <View className="h-40 w-full bg-gray-100">
+                    <Image
+                      source={{ uri: product?.images[0] }}
+                      className="w-full h-full"
+                      style={{ resizeMode: "cover" }}
+                    />
 
-                  {/* Discount Tag - Conditional */}
-                  {product?.discount > 0 && (
-                    <View className="absolute top-0 left-0 bg-red-500 px-2 py-1 rounded-br-lg">
-                      <Text className="text-xs font-bold text-white">
-                        {product?.discount}% OFF
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Favorite Button */}
-                  <TouchableOpacity
-                    className="absolute top-2 right-2 bg-white w-8 h-8 rounded-full items-center justify-center"
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 2,
-                      elevation: 2,
-                    }}
-                  >
-                    <Feather name="heart" size={15} color="#9ca3af" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Product Details */}
-                <View className="p-3">
-                  {/* Farm Name */}
-                  <View className="flex-row items-center mb-1">
-                    <View className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
-                    <Text className="text-xs text-gray-500">
-                      {product?.farmName || "Farm Fresh"}
-                    </Text>
-                  </View>
-
-                  {/* Product Name */}
-                  <Text
-                    className="font-semibold text-gray-800 text-sm mb-2"
-                    numberOfLines={2}
-                    style={{ lineHeight: 18 }}
-                  >
-                    {product?.name}
-                  </Text>
-
-                  {/* Rating - if available */}
-                  {product?.rating && (
-                    <View className="flex-row items-center mb-2">
-                      <Feather name="star" size={12} color="#FFAB00" />
-                      <Text className="text-xs text-gray-600 ml-1">
-                        {product?.rating} ({product?.reviewCount || 0})
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Price and Add Button */}
-                  <View className="flex-row justify-between items-center">
-                    <View>
-                      {/* Show original price if discounted */}
-                      {product?.originalPrice && (
-                        <Text className="text-xs text-gray-400 line-through">
-                          ${product?.originalPrice}
+                    {/* Discount Tag - Conditional */}
+                    {product?.discount > 0 && (
+                      <View className="absolute top-0 left-0 bg-red-500 px-2 py-1 rounded-br-lg">
+                        <Text className="text-xs font-bold text-white">
+                          {product?.discount}% OFF
                         </Text>
-                      )}
-                      <Text className="font-bold text-gray-900 text-base">
-                        ${product?.price}
-                      </Text>
-                    </View>
+                      </View>
+                    )}
 
-                    <TouchableOpacity className="bg-emerald-500 w-8 h-8 rounded-full items-center justify-center">
-                      <Text className="text-white font-bold text-base">+</Text>
+                    {/* Favorite Button */}
+                    <TouchableOpacity
+                      className="absolute top-2 right-2 bg-white w-8 h-8 rounded-full items-center justify-center"
+                      style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 2,
+                        elevation: 2,
+                      }}
+                    >
+                      <Feather name="heart" size={15} color="#9ca3af" />
                     </TouchableOpacity>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+
+                  {/* Product Details */}
+                  <View className="p-3">
+                    {/* Farm Name */}
+                    <View className="flex-row items-center mb-1">
+                      <View className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
+                      <Text className="text-xs text-gray-500">
+                        {product?.farmName || "Farm Fresh"}
+                      </Text>
+                    </View>
+
+                    {/* Product Name */}
+                    <Text
+                      className="font-semibold text-gray-800 text-sm mb-2"
+                      numberOfLines={2}
+                      style={{ lineHeight: 18 }}
+                    >
+                      {product?.name}
+                    </Text>
+
+                    {/* Rating - if available */}
+                    {product?.rating && (
+                      <View className="flex-row items-center mb-2">
+                        <Feather name="star" size={12} color="#FFAB00" />
+                        <Text className="text-xs text-gray-600 ml-1">
+                          {product?.rating} ({product?.reviewCount || 0})
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Price and Add Button */}
+                    <View className="flex-row justify-between items-center">
+                      <View>
+                        {/* Show original price if discounted */}
+                        {product?.originalPrice && (
+                          <Text className="text-xs text-gray-400 line-through">
+                            ₹{product?.originalPrice}
+                          </Text>
+                        )}
+                        <Text className="font-bold text-gray-900 text-base">
+                          ₹{product?.price}
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity className="bg-emerald-500 w-8 h-8 rounded-full items-center justify-center">
+                        <Text className="text-white font-bold text-base">
+                          +
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text>Loading...</Text>
+            )}
           </View>
         </View>
       </ScrollView>

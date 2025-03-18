@@ -27,3 +27,12 @@ export interface ProductInterface {
   };
   createdAt?: Date | string;
 }
+
+export interface CartItem {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
+  quantity: number;
+  image: string;
+}

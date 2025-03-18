@@ -12,6 +12,10 @@ const UserSchema = new mongoose.Schema(
       default: "buyer",
     },
     farmName: { type: String, default: "" },
+    cart: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cart",
+    },
   },
   { timestamps: true }
 );

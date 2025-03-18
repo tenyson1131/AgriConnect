@@ -9,6 +9,7 @@ const connectDB = require("./db/db.js");
 // router imports
 const authRouter = require("./routes/authRoutes.js");
 const productRouter = require("./routes/productRoutes.js");
+const cartRouter = require("./routes/cartRoutes.js");
 
 // middelwares
 const cors = require("cors");
@@ -19,6 +20,7 @@ app.use(cors());
 // routes
 app.use("/api/auth", authRouter);
 app.use("/api/product", productRouter);
+app.use("/api/cart", cartRouter);
 
 app.get("/profile", authMiddleware, (req, res) => {
   console.log("in profile route");

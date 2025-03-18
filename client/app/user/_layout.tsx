@@ -101,6 +101,7 @@ export default function UserLayout() {
         // options={{ tabBarStyle: { display: "none" } }}
         options={{
           title: "Cart",
+          tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (
             <Feather name="shopping-bag" size={24} color={color} />
           ),

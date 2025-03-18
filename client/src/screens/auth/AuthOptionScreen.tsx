@@ -23,7 +23,7 @@ export default function AuthOptionsScreen({ navigation }) {
 
   return (
     <View className="flex-1 bg-[#111827]">
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" backgroundColor={"#111827"} />
       <SafeAreaView className="flex-1">
         <View className="flex-1 px-6 pt-10 pb-6">
           {/* Brand Identity */}
