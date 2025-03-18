@@ -15,7 +15,6 @@ import { ProductContext } from "@/context/ProductContext";
 
 const { width } = Dimensions.get("window");
 
-
 const categories = [
   { name: "Fruits", icon: "nutrition-outline" },
   { name: "Vegetables", icon: "leaf-outline" },
@@ -109,7 +108,6 @@ const CategoryScreen = () => {
   console.log("params:", category);
   const categoryScrollRef = useRef(null);
 
-
   const { products } = useContext(ProductContext);
 
   // selectedCategory from URL params or default to "Vegetables"
@@ -141,14 +139,12 @@ const CategoryScreen = () => {
   // Scroll to the selected category when component mounts or category changes
   useEffect(() => {
     if (categoryScrollRef.current) {
-      
       const selectedIndex = categories.findIndex(
         (cat) => cat.name === selectedCategory
       );
       if (selectedIndex !== -1) {
-       
         setTimeout(() => {
-          const scrollToX = selectedIndex * (width * 0.25); /\
+          const scrollToX = selectedIndex * (width * 0.25);
           categoryScrollRef?.current?.scrollTo({
             x: scrollToX,
             animated: true,
