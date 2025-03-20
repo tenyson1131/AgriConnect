@@ -318,6 +318,7 @@ const CategoryScreen = () => {
                 key={product._id}
                 className="bg-white mb-4 rounded-2xl shadow-sm overflow-hidden w-[48%]"
                 style={{ elevation: 1 }}
+                onPress={() => router.push(`/product/${product?._id}`)}
               >
                 <Image
                   source={{ uri: product.images[0] }}

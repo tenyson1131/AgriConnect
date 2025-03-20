@@ -122,6 +122,7 @@ export default function UserLayout() {
         name="profile"
         // options={{ tabBarStyle: { display: "none" } }}
         options={{
+          href: null,
           title: "Profile",
           tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (

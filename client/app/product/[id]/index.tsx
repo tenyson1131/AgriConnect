@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import axios from "axios";
@@ -6,6 +6,7 @@ import ProductDetailScreen from "@/src/screens/product/ProductDetailScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ProductInterface } from "@/src/types";
 import ErrGeneric from "@/src/screens/ErrGeneric";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function index() {
   const { id } = useLocalSearchParams();
@@ -49,7 +50,11 @@ export default function index() {
     // <Text>{loading ? "Loading....." : "  Product detail page:{id}"}</Text>
     <GestureHandlerRootView style={{ flex: 1 }}>
       {loading ? (
-        <Text>Loading.....</Text>
+        <SafeAreaView className="flex-1">
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#333" />
+          </View>
+        </SafeAreaView>
       ) : !productDetail ? (
         <ErrGeneric />
       ) : (

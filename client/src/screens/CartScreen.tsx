@@ -6,36 +6,37 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { CartContext } from "@/context/CartContext";
 
 // Sample cart data
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Indonesian Beans",
-    category: "Beans",
-    weight: "500g",
-    price: 42.5,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
-  },
-  {
-    id: 2,
-    name: "Peru Beans",
-    category: "Beans",
-    weight: "250g",
-    price: 60.0,
-    quantity: 2,
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
-  },
-];
+// const initialCartItems = [
+//   {
+//     id: 1,
+//     name: "Indonesian Beans",
+//     category: "Beans",
+//     weight: "500g",
+//     price: 42.5,
+//     quantity: 1,
+//     image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
+//   },
+//   {
+//     id: 2,
+//     name: "Peru Beans",
+//     category: "Beans",
+//     weight: "250g",
+//     price: 60.0,
+//     quantity: 2,
+//     image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
+//   },
+// ];
 
 const CartScreen = () => {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  // const [cartItems, setCartItems] = useState(initialCartItems);
 
   const { cart_Loading, cart, loadCart, removeFromCart } =
     useContext(CartContext);
@@ -47,11 +48,10 @@ const CartScreen = () => {
   );
 
   // Calculate cart totals
-  const itemsTotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const discount = 3.0;
+  const itemsTotal = Array.isArray(cart)
+    ? cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    : 0;
+  const discount = 0;
   const total = itemsTotal - discount;
 
   // Update quantity functions
@@ -108,77 +108,83 @@ const CartScreen = () => {
 
       {/* Main Container - Flex-1 to push checkout to bottom */}
       <View className="flex-1 flex-col justify-between">
-        {/* Cart Items */}
-        <ScrollView
-          className="flex-grow px-4"
-          showsVerticalScrollIndicator={false}
-        >
-          {cart.length > 0 &&
-            cart?.map((item) => (
-              <View
-                key={item._id}
-                className="flex-row py-4 border-b border-gray-100"
-              >
-                {/* Product Image */}
-                <View className="w-[70px] h-[70px] bg-gray-100 rounded-xl items-center justify-center mr-3 overflow-hidden">
-                  <Image
-                    source={{ uri: item.image }}
-                    className="w-full h-full"
-                    resizeMode="cover"
-                  />
-                </View>
-
-                {/* Product Info */}
-                <View className="flex-1 justify-between">
-                  <View className="flex-row justify-between">
-                    <View className="flex-1 pr-4">
-                      <Text className="text-base font-semibold text-gray-900 mb-1">
-                        {item.name}
-                      </Text>
-                      <Text className="text-sm text-gray-500 mb-2">
-                        {item.category} •{/* {item.weight} */}
-                      </Text>
-                    </View>
-
-                    {/* Delete button */}
-                    <TouchableOpacity
-                      onPress={() => removeFromCart(item._id)}
-                      className="p-1"
-                    >
-                      <Feather name="trash-2" size={18} color="#888" />
-                    </TouchableOpacity>
+        {cart_Loading ? (
+          <View className="mt-10">
+            <ActivityIndicator size="large" color="#333" />
+          </View>
+        ) : (
+          //  {/* Cart Items */}
+          <ScrollView
+            className="flex-grow px-4"
+            showsVerticalScrollIndicator={false}
+          >
+            {cart.length > 0 &&
+              cart?.map((item) => (
+                <View
+                  key={item._id}
+                  className="flex-row py-4 border-b border-gray-100"
+                >
+                  {/* Product Image */}
+                  <View className="w-[70px] h-[70px] bg-gray-100 rounded-xl items-center justify-center mr-3 overflow-hidden">
+                    <Image
+                      source={{ uri: item.image }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
                   </View>
 
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-base font-semibold text-gray-900">
-                      ₹ {item.price.toFixed(2)}
-                    </Text>
+                  {/* Product Info */}
+                  <View className="flex-1 justify-between">
+                    <View className="flex-row justify-between">
+                      <View className="flex-1 pr-4">
+                        <Text className="text-base font-semibold text-gray-900 mb-1">
+                          {item.name}
+                        </Text>
+                        <Text className="text-sm text-gray-500 mb-2">
+                          {item.category} •{/* {item.weight} */}
+                        </Text>
+                      </View>
 
-                    {/* Quantity Controls */}
-                    <View className="flex-row items-center bg-gray-100 rounded-full py-1 px-1">
+                      {/* Delete button */}
                       <TouchableOpacity
-                        onPress={() => decreaseQuantity(item._id)}
-                        className="w-7 h-7 bg-white rounded-full items-center justify-center"
+                        onPress={() => removeFromCart(item._id)}
+                        className="p-1"
                       >
-                        <Feather name="minus" size={16} color="#333" />
+                        <Feather name="trash-2" size={18} color="#888" />
                       </TouchableOpacity>
+                    </View>
 
-                      <Text className="mx-3 font-semibold">
-                        {item.quantity}
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-base font-semibold text-gray-900">
+                        ₹ {item.price.toFixed(2)}
                       </Text>
 
-                      <TouchableOpacity
-                        onPress={() => increaseQuantity(item._id)}
-                        className="w-7 h-7 bg-white rounded-full items-center justify-center"
-                      >
-                        <Feather name="plus" size={16} color="#333" />
-                      </TouchableOpacity>
+                      {/* Quantity Controls */}
+                      <View className="flex-row items-center bg-gray-100 rounded-full py-1 px-1">
+                        <TouchableOpacity
+                          onPress={() => decreaseQuantity(item._id)}
+                          className="w-7 h-7 bg-white rounded-full items-center justify-center"
+                        >
+                          <Feather name="minus" size={16} color="#333" />
+                        </TouchableOpacity>
+
+                        <Text className="mx-3 font-semibold">
+                          {item.quantity}
+                        </Text>
+
+                        <TouchableOpacity
+                          onPress={() => increaseQuantity(item._id)}
+                          className="w-7 h-7 bg-white rounded-full items-center justify-center"
+                        >
+                          <Feather name="plus" size={16} color="#333" />
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            ))}
-        </ScrollView>
+              ))}
+          </ScrollView>
+        )}
 
         {/* Order Summary - positioned at bottom */}
         <View className="p-4 bg-white">

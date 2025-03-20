@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,16 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo, Feather, FontAwesome } from "@expo/vector-icons";
 import { RefreshControl } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { ProductContext } from "@/context/ProductContext";
+
+const { width } = Dimensions.get("window");
 
 const categories = [
   {
@@ -438,7 +442,8 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               ))
             ) : (
-              <Text>Loading...</Text>
+              // <Text>Loading...</Text>
+              <ProductSkeleton />
             )}
           </View>
         </View>
@@ -446,5 +451,107 @@ const HomeScreen = () => {
     </SafeAreaView>
   );
 };
+
+function ProductSkeleton() {
+  const shimmerAnimatedValue = useRef(new Animated.Value(-width)).current;
+
+  useEffect(() => {
+    const shimmerAnimation = Animated.loop(
+      Animated.timing(shimmerAnimatedValue, {
+        toValue: width,
+        duration: 1500,
+        useNativeDriver: true,
+      })
+    );
+
+    shimmerAnimation.start();
+
+    return () => {
+      shimmerAnimation.stop();
+    };
+  }, []);
+
+  const getShimmerStyle = () => {
+    const shimmerTranslate = shimmerAnimatedValue.interpolate({
+      inputRange: [-width, width],
+      outputRange: [-width, width],
+    });
+
+    return {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      transform: [{ translateX: shimmerTranslate }],
+      backgroundColor: "rgba(255, 255, 255, 0.5)",
+    };
+  };
+
+  return Array(2)
+    .fill()
+    .map((_, index) => (
+      <View
+        key={`skeleton-${index}`}
+        className="w-[48%] mb-4 rounded-2xl overflow-hidden bg-white"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
+      >
+        {/* Image Container Skeleton */}
+        <View className="h-40 w-full bg-gray-300 relative overflow-hidden">
+          <Animated.View style={getShimmerStyle()} />
+        </View>
+
+        {/* Product Details Skeleton */}
+        <View className="p-3">
+          {/* Farm Name Skeleton */}
+          <View className="flex-row items-center mb-1">
+            <View className="w-2 h-2 rounded-full bg-gray-300 relative overflow-hidden mr-1">
+              <Animated.View style={getShimmerStyle()} />
+            </View>
+            <View className="w-20 h-3 bg-gray-300 rounded relative overflow-hidden">
+              <Animated.View style={getShimmerStyle()} />
+            </View>
+          </View>
+
+          {/* Product Name Skeleton */}
+          <View className="w-full h-4 bg-gray-300 rounded mb-1 relative overflow-hidden">
+            <Animated.View style={getShimmerStyle()} />
+          </View>
+          <View className="w-3/4 h-4 bg-gray-300 rounded mb-2 relative overflow-hidden">
+            <Animated.View style={getShimmerStyle()} />
+          </View>
+
+          {/* Rating Skeleton */}
+          <View className="flex-row items-center mb-2">
+            <View className="w-16 h-3 bg-gray-300 rounded relative overflow-hidden">
+              <Animated.View style={getShimmerStyle()} />
+            </View>
+          </View>
+
+          {/* Price and Add Button Skeleton */}
+          <View className="flex-row justify-between items-center">
+            <View>
+              <View className="w-12 h-3 bg-gray-300 rounded mb-1 relative overflow-hidden">
+                <Animated.View style={getShimmerStyle()} />
+              </View>
+              <View className="w-16 h-5 bg-gray-300 rounded relative overflow-hidden">
+                <Animated.View style={getShimmerStyle()} />
+              </View>
+            </View>
+
+            <View className="bg-gray-300 w-8 h-8 rounded-full relative overflow-hidden">
+              <Animated.View style={getShimmerStyle()} />
+            </View>
+          </View>
+        </View>
+      </View>
+    ));
+}
 
 export default HomeScreen;

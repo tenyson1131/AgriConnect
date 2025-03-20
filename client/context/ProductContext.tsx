@@ -34,7 +34,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [authState?.authenticated]);
 
-  async function fetchProducts() {
+  async function fetchProducts(retries = 8, delay = 1000) {
     try {
       setProductLoading(true);
       const result = await axios.get(
@@ -46,7 +46,14 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         setProducts(result.data.products);
       }
     } catch (error) {
-      console.log("error in fetchProducts", error);
+      console.log(`Error in fetchProducts (attempt ${4 - retries}):`, error);
+
+      if (retries > 0) {
+        console.log(`Retrying fetchProducts in ${delay}ms...`);
+        setTimeout(() => fetchProducts(retries - 1, delay * 2), delay);
+      } else {
+        console.log("Failed to fetch products after multiple attempts.");
+      }
     } finally {
       setProductLoading(false);
     }
