@@ -1,3 +1,16 @@
+export interface UserInterface {
+  _id: string;
+  uid?: string;
+  name: string;
+  email: string;
+  role: "buyer" | "farmer";
+  farmName?: string;
+  cart: {
+    user: string;
+    items: CartItem[];
+  };
+}
+
 type ProductCategory =
   | "Fruits"
   | "Vegetables"
@@ -30,6 +43,7 @@ export interface ProductInterface {
 
 export interface CartItem {
   _id: string;
+  productId: string;
   name: string;
   category: string;
   price: number;

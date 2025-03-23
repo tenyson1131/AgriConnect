@@ -54,11 +54,15 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    const userWithoutPassword = await User.findById(user._id).select(
+      "-password"
+    );
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
     return res.status(200).json({
       token,
-      user: { id: user._id, email: user.email, name: user.name },
+      user: userWithoutPassword,
     });
   } catch (error) {
     return res.status(500).json({ error: error });

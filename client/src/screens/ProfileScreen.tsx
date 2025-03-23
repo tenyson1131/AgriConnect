@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -11,15 +11,18 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { UserContext } from "@/context/UserContext";
 
-const ProfileScreen = ({ handleLogout }) => {
+const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
+  const { USER } = useContext(UserContext);
+
   // Mock user data
   const user = {
     name: "User 1 (hardcoded)",
     email: "User.User@example.com",
     profileImage: "https://randomuser.me/api/portraits/women/44.jpg",
     level: "Gold Member",
-    points: 2350,
+    points: 0,
   };
 
   const router = useRouter();
@@ -64,21 +67,30 @@ const ProfileScreen = ({ handleLogout }) => {
             {/* Profile Image with Level Ring */}
             <View className="relative">
               <View className="w-20 h-20 rounded-full border-2 border-emerald-400 p-1">
-                <Image
+                {/* <Image
                   source={{ uri: user.profileImage }}
                   className="w-full h-full rounded-full"
-                />
+                /> */}
+                <View className="itecenter justify-center w-full h-full rounded-full bg-gray-100">
+                  <Text className=" text-center text-4xl text-green-700">
+                    {USER?.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
               </View>
               <View className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full px-2 py-1 border border-white">
-                <Text className="text-xs font-bold text-white">Lvl 3</Text>
+                <Text className="text-xs font-bold text-white">Lvl 0</Text>
               </View>
             </View>
 
             <View className="ml-4 flex-1">
               <Text className="font-bold text-lg text-gray-800">
-                {user.name}
+                {/* {user.name} */}
+                {USER?.name}
               </Text>
-              <Text className="text-gray-500 text-sm mb-1">{user.email}</Text>
+              <Text className="text-gray-500 text-sm mb-1">
+                {/* {user.email} */}
+                {USER?.email}
+              </Text>
 
               {/* Points Progress */}
               <View className="mt-1">
@@ -270,7 +282,11 @@ const ProfileScreen = ({ handleLogout }) => {
                   }`}
                 >
                   <View className="w-10 h-10 rounded-full items-center justify-center bg-gray-100">
-                    <Feather name={item.icon} size={18} color="#4b5563" />
+                    <Feather
+                      name={item.icon as any}
+                      size={18}
+                      color="#4b5563"
+                    />
                   </View>
                   <View className="ml-3 flex-1">
                     <Text className="font-medium text-gray-800">

@@ -14,6 +14,7 @@ import { Entypo, Feather, FontAwesome } from "@expo/vector-icons";
 import { RefreshControl } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { ProductContext } from "@/context/ProductContext";
+import { UserContext } from "@/context/UserContext";
 
 const { width } = Dimensions.get("window");
 
@@ -52,6 +53,7 @@ const categories = [
 ];
 
 const HomeScreen = () => {
+  const { USER } = useContext(UserContext);
   const { products, fetchProducts } = useContext(ProductContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -115,6 +117,7 @@ const HomeScreen = () => {
               </View>
             </View>
           </View>
+          {/* user img/icon */}
           <TouchableOpacity
             style={{
               width: 44,
@@ -126,7 +129,10 @@ const HomeScreen = () => {
             }}
             onPress={() => router.push("/user/profile")}
           >
-            <Feather name="user" size={24} color="#28a745" />
+            {/* <Feather name="user" size={24} color="#28a745" /> */}
+            <Text className="text-3xl text-[#28a745] text-center">
+              {USER?.name?.charAt(0).toUpperCase() || "U"}
+            </Text>
           </TouchableOpacity>
         </View>
 

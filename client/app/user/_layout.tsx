@@ -11,8 +11,15 @@
 // }
 
 import { Tabs } from "expo-router";
-import { Ionicons, Feather } from "@expo/vector-icons";
-import { Pressable, TouchableOpacity } from "react-native";
+import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  ActivityIndicator,
+  Pressable,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "@/context/UserContext";
 
 // Custom tab bar button to fix type errors
 const TabBarButton = (props: any) => {
@@ -34,6 +41,34 @@ const TabBarButton = (props: any) => {
 };
 
 export default function UserLayout() {
+  const { USER, loadUser } = useContext(UserContext);
+  const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (isFetching || USER) return;
+      setIsFetching(true);
+      await loadUser();
+      setIsFetching(false);
+    };
+
+    fetchUser(); // Initial fetch
+
+    const interval = setInterval(() => {
+      fetchUser();
+    }, 2000); // Retry every 5 seconds if USER is null
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [USER]); // Rerun when USER or isFetching changes
+
+  if (!USER) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -115,6 +150,22 @@ export default function UserLayout() {
           tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (
             <Feather name="user" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="forum"
+        // options={{ tabBarStyle: { display: "none" } }}
+        options={{
+          title: "AgriTalk",
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color }) => (
+            // <Feather name="user" size={24} color={color} />
+            <MaterialCommunityIcons
+              name="leaf-circle"
+              size={24}
+              color={"#649101"}
+            />
           ),
         }}
       />

@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import { UserInterface } from "@/src/types";
 
 interface AuthContextType {
   authState?: {

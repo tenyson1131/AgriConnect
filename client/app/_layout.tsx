@@ -5,16 +5,19 @@ import Toast from "react-native-toast-message";
 import toastConfig from "@/src/utils/toastConfig";
 import { CartProvider } from "@/context/CartContext";
 import { ProductProvider } from "@/context/ProductContext";
+import { UserProvider } from "@/context/UserContext";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ProductProvider>
-        <CartProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-          <Toast config={toastConfig} />
-        </CartProvider>
-      </ProductProvider>
+      <UserProvider>
+        <ProductProvider>
+          <CartProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+            <Toast config={toastConfig} />
+          </CartProvider>
+        </ProductProvider>
+      </UserProvider>
     </AuthProvider>
   );
 }
