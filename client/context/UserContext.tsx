@@ -1,6 +1,13 @@
 import { UserInterface } from "@/src/types";
 import axios from "axios";
-import { createContext, ReactNode, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { AuthContext } from "./AuthContext";
 
 interface UserContextType {
   USER: UserInterface | null;
@@ -15,6 +22,8 @@ export const UserContext = createContext<UserContextType>({
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [USER, setUSER] = useState<UserInterface | null>(null);
 
+  const { authState } = useContext(AuthContext);
+
   async function loadUser() {
     try {
       const res = await axios.get(
@@ -27,6 +36,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       console.log("error while loading user", error);
     }
   }
+
+  useEffect(() => {
+    loadUser();
+  }, [authState]);
   return (
     <UserContext.Provider value={{ USER, loadUser }}>
       {children}

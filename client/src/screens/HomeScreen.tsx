@@ -84,19 +84,23 @@ const HomeScreen = () => {
             paddingVertical: 14,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Entypo name="location-pin" size={22} color="#5a9d42" />
-            <View style={{ marginLeft: 8 }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "flex-end", flex: 1 }}
+          >
+            {/* <Entypo name="location-pin" size={22} color="#5a9d42" /> */}
+            {/* <FontAwesome name="user-circle-o" size={36} color="#398763" /> */}
+            <FontAwesome name="user-circle" size={36} color="#398763" />
+            <View style={{ marginLeft: 8, flex: 1 }}>
               <Text
                 style={{ color: "#9ca3af", fontSize: 12, letterSpacing: 0.4 }}
               >
-                Your Location
+                Welcome
               </Text>
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  marginTop: 2,
+                  // marginTop: 2,
                 }}
               >
                 <Text
@@ -105,15 +109,18 @@ const HomeScreen = () => {
                     fontSize: 16,
                     letterSpacing: 0.2,
                   }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
-                  xuyASdz, ABC
+                  {/* xuyASdz, ABC */}
+                  {USER?.name || "Guest"}
                 </Text>
-                <Feather
+                {/* <Feather
                   name="chevron-down"
                   size={16}
                   color="#5a9d42"
                   style={{ marginLeft: 6 }}
-                />
+                /> */}
               </View>
             </View>
           </View>

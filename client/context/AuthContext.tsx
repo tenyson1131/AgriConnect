@@ -14,7 +14,14 @@ interface AuthContextType {
     token: string | null;
     authenticated: boolean | null;
   };
-  onRegister?: (name: string, email: string, password: string) => Promise<any>;
+  onRegister?: (
+    name: string,
+    email: string,
+    password: string,
+    role?: "buyer" | "farmer",
+    farmName?: string
+  ) => Promise<any>;
+  onVerifyOTP?: (email: string, otp: number) => Promise<any>;
   onLogin?: (email: string, password: string) => Promise<any>;
   onLogout?: () => Promise<any>;
   isLoading?: boolean;
@@ -69,12 +76,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     loadToken();
   }, []);
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    role?: "buyer" | "farmer",
+    farmName?: string
+  ) => {
     try {
       return await axios.post(
         `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/signup`,
-        { name, email, password }
+        { name, email, password, role, farmName }
       );
+    } catch (error) {
+      return { error: true, message: (error as any).response.data.message };
+    }
+  };
+
+  const verifyOTP = async (email: string, otp: number) => {
+    try {
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/verify-otp`,
+        { email, otp }
+      );
+
+      setAuthState({
+        token: res.data.token,
+        authenticated: true,
+      });
+
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${res.data.token}`;
+
+      try {
+        await SecureStore.setItemAsync(TOKEN_KEY, res.data.token);
+        console.log("\n securestore done"); // ✅ If this prints, SecureStore worked.
+      } catch (storeError) {
+        console.error("SecureStore error:", storeError); // 🔴 Log the error if SecureStore fails.
+      }
+
+      return res;
     } catch (error) {
       return { error: true, message: (error as any).response.data.message };
     }
@@ -122,6 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const value = {
     onRegister: register,
+    onVerifyOTP: verifyOTP,
     onLogin: login,
     onLogout: logout,
     authState,
