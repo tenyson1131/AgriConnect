@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,9 +12,15 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { UserContext } from "@/context/UserContext";
+import * as ImagePicker from "expo-image-picker";
+import axios from "axios";
 
 const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
-  const { USER } = useContext(UserContext);
+  const { USER, loadUser } = useContext(UserContext);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   // Mock user data
   const user = {
@@ -26,6 +32,52 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
   };
 
   const router = useRouter();
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
+
+    if (!result?.canceled) {
+      // uploading img to cloudinary here..
+      const base64Img = `data:image/jpeg;base64,${result?.assets[0].base64}`;
+
+      const data = new FormData();
+      data.append("file", base64Img);
+      data.append("upload_preset", process.env.EXPO_PUBLIC_PRESET_NAME!);
+      data.append("cloud_name", process.env.EXPO_PUBLIC_CLOUD_NAME!);
+
+      fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUD_NAME}/image/upload`,
+        {
+          method: "post",
+          body: data,
+        }
+      )
+        .then((res) => res.json())
+        .then(async (res) => {
+          console.log(res);
+
+          try {
+            const result = await axios.post(
+              `${process.env.EXPO_PUBLIC_SERVER_URL}/api/user/updatePfp`,
+              {
+                img: res.secure_url,
+              }
+            );
+
+            console.log("result:", result);
+          } catch (error) {
+            console.log("error while uploading image Backend", error);
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -64,49 +116,38 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
         {/* Floating Profile Card */}
         <View className="absolute left-6 right-6 bottom-0 transform translate-y-1/2 z-10">
           <View className="bg-white rounded-2xl p-5 shadow-md flex-row items-center border border-gray-100">
-            {/* Profile Image with Level Ring */}
+            {/* Profile Image with Camera Icon */}
             <View className="relative">
               <View className="w-20 h-20 rounded-full border-2 border-emerald-400 p-1">
-                {/* <Image
-                  source={{ uri: user.profileImage }}
-                  className="w-full h-full rounded-full"
-                /> */}
-                <View className="itecenter justify-center w-full h-full rounded-full bg-gray-100">
-                  <Text className=" text-center text-4xl text-green-700">
-                    {USER?.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                {USER?.img ? (
+                  <Image
+                    source={{ uri: USER.img }}
+                    className="w-full h-full rounded-full"
+                  />
+                ) : (
+                  <View className="items-center justify-center w-full h-full rounded-full bg-gray-100">
+                    <Text className="text-center text-4xl text-green-700">
+                      {USER?.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
               </View>
-              <View className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full px-2 py-1 border border-white">
-                <Text className="text-xs font-bold text-white">Lvl 0</Text>
-              </View>
+              <TouchableOpacity
+                onPress={pickImage}
+                className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1.5 border border-white"
+              >
+                <Feather name="camera" size={14} color="#ffffff" />
+              </TouchableOpacity>
             </View>
 
             <View className="ml-4 flex-1">
               <Text className="font-bold text-lg text-gray-800">
-                {/* {user.name} */}
                 {USER?.name}
               </Text>
-              <Text className="text-gray-500 text-sm mb-1">
-                {/* {user.email} */}
-                {USER?.email}
+              <Text className="text-gray-500 text-sm mb-1">{USER?.email}</Text>
+              <Text className="text-xs text-gray-400 mt-1 italic">
+                Name and email cannot be changed
               </Text>
-
-              {/* Points Progress */}
-              <View className="mt-1">
-                <View className="flex-row justify-between items-center mb-1">
-                  <Text className="text-xs text-gray-500">Rewards Points</Text>
-                  <Text className="text-xs font-medium text-emerald-600">
-                    {user.points}/3000
-                  </Text>
-                </View>
-                <View className="h-1.5 bg-gray-200 rounded-full w-full overflow-hidden">
-                  <View
-                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"
-                    style={{ width: `${(user.points / 3000) * 100}%` }}
-                  />
-                </View>
-              </View>
             </View>
 
             <TouchableOpacity className="ml-2 p-2">

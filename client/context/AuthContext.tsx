@@ -18,6 +18,7 @@ interface AuthContextType {
     name: string,
     email: string,
     password: string,
+    img?: string,
     role?: "buyer" | "farmer",
     farmName?: string
   ) => Promise<any>;
@@ -80,13 +81,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     name: string,
     email: string,
     password: string,
+    img?: string,
     role?: "buyer" | "farmer",
     farmName?: string
   ) => {
     try {
       return await axios.post(
         `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/signup`,
-        { name, email, password, role, farmName }
+        { name, email, password, img, role, farmName }
       );
     } catch (error) {
       return { error: true, message: (error as any).response.data.message };

@@ -42,9 +42,9 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
     email: "",
     password: "",
     confirmPassword: "",
+    img: "",
     address: "",
     city: "",
-    profileImage: null as string | null,
     bio: "",
     // Farmer-specific fields
     farmName: "",
@@ -124,20 +124,39 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
   };
 
   const selectProfileImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
 
-      if (!result.canceled) {
-        updateFormData("profileImage", result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error("Error selecting image:", error);
-      Alert.alert("Error", "Could not select image. Please try again.");
+    if (!result?.canceled) {
+      // uploading img to cloudinary here..
+      const base64Img = `data:image/jpeg;base64,${result?.assets[0].base64}`;
+
+      const data = new FormData();
+      data.append("file", base64Img);
+      data.append("upload_preset", process.env.EXPO_PUBLIC_PRESET_NAME!);
+      data.append("cloud_name", process.env.EXPO_PUBLIC_CLOUD_NAME!);
+
+      fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUD_NAME}/image/upload`,
+        {
+          method: "post",
+          body: data,
+        }
+      )
+        .then((res) => res.json())
+        .then(async (res) => {
+          console.log(res);
+          setFormData((prev) => ({
+            ...prev,
+            img: res.secure_url,
+          }));
+        })
+        .catch((err) => console.log(err));
     }
   };
 
@@ -211,6 +230,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
         formData.name,
         formData.email,
         formData.password,
+        formData.img,
         userType,
         formData.farmName || ""
       );
@@ -328,9 +348,9 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
                 className="relative"
                 activeOpacity={0.8}
               >
-                {formData.profileImage ? (
+                {formData.img ? (
                   <Image
-                    source={{ uri: formData.profileImage }}
+                    source={{ uri: formData.img }}
                     className="w-28 h-28 rounded-full"
                   />
                 ) : (

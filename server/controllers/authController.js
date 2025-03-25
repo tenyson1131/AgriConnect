@@ -7,7 +7,7 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 
 async function signup(req, res) {
   try {
-    const { email, password, name, role, farmName } = req.body;
+    const { email, password, name, img, role, farmName } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: "Please fill in all fields" });
@@ -32,6 +32,7 @@ async function signup(req, res) {
       name,
       email,
       password: hashedPassword,
+      img: img || "",
       role: userRole,
       farmName: userRole === "farmer" ? farmName : "",
 

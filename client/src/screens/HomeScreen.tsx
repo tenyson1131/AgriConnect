@@ -89,7 +89,9 @@ const HomeScreen = () => {
           >
             {/* <Entypo name="location-pin" size={22} color="#5a9d42" /> */}
             {/* <FontAwesome name="user-circle-o" size={36} color="#398763" /> */}
+
             <FontAwesome name="user-circle" size={36} color="#398763" />
+
             <View style={{ marginLeft: 8, flex: 1 }}>
               <Text
                 style={{ color: "#9ca3af", fontSize: 12, letterSpacing: 0.4 }}
@@ -137,9 +139,22 @@ const HomeScreen = () => {
             onPress={() => router.push("/user/profile")}
           >
             {/* <Feather name="user" size={24} color="#28a745" /> */}
-            <Text className="text-3xl text-[#28a745] text-center">
+
+            {USER?.img && USER.img.trim() !== "" ? (
+              <Image
+                source={{ uri: USER.img }}
+                className="h-full w-full"
+                style={{ borderRadius: 18 }}
+              />
+            ) : (
+              <Text className="text-3xl text-[#28a745] text-center">
+                {USER?.name?.charAt(0).toUpperCase() || "U"}
+              </Text>
+            )}
+
+            {/* <Text className="text-3xl text-[#28a745] text-center">
               {USER?.name?.charAt(0).toUpperCase() || "U"}
-            </Text>
+            </Text> */}
           </TouchableOpacity>
         </View>
 

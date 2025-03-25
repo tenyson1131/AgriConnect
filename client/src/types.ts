@@ -3,12 +3,14 @@ export interface UserInterface {
   uid?: string;
   name: string;
   email: string;
+  img: string;
   role: "buyer" | "farmer";
   farmName?: string;
   cart: {
     user: string;
     items: CartItem[];
   };
+  verified: boolean;
 }
 
 type ProductCategory =
