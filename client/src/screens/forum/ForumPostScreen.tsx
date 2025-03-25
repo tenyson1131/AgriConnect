@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import {
   AntDesign,
@@ -16,7 +17,11 @@ import {
   Feather,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { CommentInterface, PostInterface } from "@/src/types";
+import timeAgo from "@/src/utils/timesAgo";
+import { UserContext } from "@/context/UserContext";
+import axios from "axios";
 
 // Mock comments data
 const mockComments = [
@@ -81,10 +86,47 @@ const mockComments = [
 ];
 
 // Comment component
-const Comment = ({ comment, isReply = false }) => {
+const Comment = ({
+  comment,
+  isReply = false,
+  fetchComment,
+}: {
+  comment: CommentInterface;
+  isReply: boolean;
+  fetchComment: () => void;
+}) => {
   const [showReplies, setShowReplies] = useState(true);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [liked, setLiked] = useState(false);
+
+  const [newReply, setNewReply] = useState("");
+  const [disableReply, setDisableReply] = useState(false);
+
+  async function addReply() {
+    setDisableReply(true);
+    try {
+      const result = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/comment/add-reply`,
+        {
+          commentId: comment._id,
+          content: newReply,
+        }
+      );
+
+      setNewReply("");
+      setShowReplyInput(false);
+      setShowReplies(true);
+
+      fetchComment();
+      // if (result) {
+      //   console.log("result in post screen", result.data);
+      // }
+    } catch (error) {
+      console.log("error while adding reply", error);
+    } finally {
+      setDisableReply(false);
+    }
+  }
 
   return (
     <View
@@ -103,7 +145,7 @@ const Comment = ({ comment, isReply = false }) => {
       <View style={{ flexDirection: "row" }}>
         <View style={{ marginRight: 12 }}>
           <Image
-            source={{ uri: comment.authorAvatar }}
+            source={{ uri: comment.author.img }}
             style={{
               height: 40,
               width: 40,
@@ -140,7 +182,7 @@ const Comment = ({ comment, isReply = false }) => {
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ fontWeight: "bold", color: "#1E293B" }}>
-                {comment.author}
+                {comment.author.name}
               </Text>
               <View
                 style={{
@@ -152,7 +194,7 @@ const Comment = ({ comment, isReply = false }) => {
                 }}
               >
                 <Text style={{ fontSize: 10, color: "#64748B" }}>
-                  {comment.timestamp}
+                  {timeAgo(comment.createdAt)}
                 </Text>
               </View>
             </View>
@@ -199,7 +241,7 @@ const Comment = ({ comment, isReply = false }) => {
                   fontSize: 12,
                 }}
               >
-                {liked ? comment.likes + 1 : comment.likes}
+                {liked ? comment.likes.length + 1 : comment.likes}
               </Text>
             </TouchableOpacity>
 
@@ -298,6 +340,8 @@ const Comment = ({ comment, isReply = false }) => {
                   paddingVertical: 4,
                 }}
                 placeholder="Write a reply..."
+                value={newReply}
+                onChangeText={(text) => setNewReply(text)}
               />
               <TouchableOpacity
                 style={{
@@ -311,9 +355,16 @@ const Comment = ({ comment, isReply = false }) => {
                   shadowRadius: 4,
                   elevation: 2,
                 }}
+                className={`${disableReply ? "opacity-50" : ""}`}
                 activeOpacity={0.7}
+                onPress={addReply}
+                disabled={disableReply}
               >
-                <Ionicons name="send" size={16} color="#FFFFFF" />
+                {disableReply ? (
+                  <ActivityIndicator size={18} color={"white"} />
+                ) : (
+                  <Ionicons name="send" size={16} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
             </View>
           )}
@@ -323,8 +374,8 @@ const Comment = ({ comment, isReply = false }) => {
             comment.replies &&
             comment.replies.length > 0 && (
               <View style={{ marginTop: 16 }}>
-                {comment.replies.map((reply) => (
-                  <Comment key={reply.id} comment={reply} isReply={true} />
+                {comment.replies.map((reply, index) => (
+                  <Comment key={index} comment={reply} isReply={true} />
                 ))}
               </View>
             )}
@@ -336,10 +387,87 @@ const Comment = ({ comment, isReply = false }) => {
 
 const ForumPostScreen = () => {
   const router = useRouter();
-  const { postId } = useLocalSearchParams();
+  const { postData } = useLocalSearchParams<{ postData: string }>();
+
+  const { USER } = useContext(UserContext);
+
+  const [post, setPost] = useState<PostInterface>();
+
+  const [newComment, setNewComment] = useState("");
+  const [disableComment, setDisableComment] = useState(false);
+  const [loadingComment, setLoadingComment] = useState(false);
+
+  // fetched comments
+  const [comments, setComments] = useState<CommentInterface>();
+
+  useEffect(() => {
+    setPost(JSON.parse(decodeURIComponent(postData)));
+    console.log("postData:", JSON.parse(decodeURIComponent(postData)));
+  }, []);
+
+  const fetchComment = async () => {
+    setLoadingComment(true);
+    try {
+      const result = await axios.get(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/comment/get-comment/${post._id}`
+      );
+
+      if (result) {
+        console.log("fetched comments: ", result.data);
+
+        setComments(result.data.comments);
+      }
+    } catch (error) {
+      console.log("error while fetching comments", error);
+    } finally {
+      setLoadingComment(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!post || post.commentCount === 0) return;
+
+      fetchComment();
+    }, [post?._id])
+  );
+
+  if (!post) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size={36} color={"black"} />
+      </View>
+    );
+  }
+
+  async function addComment() {
+    setDisableComment(true);
+    try {
+      const result = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/comment/create-comment`,
+        {
+          postId: post?._id,
+          content: newComment,
+        }
+      );
+
+      setNewComment("");
+      setPost((prev) =>
+        prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev
+      );
+      // if (result) {
+      //   console.log("result in post screen", result.data);
+      // }
+    } catch (error) {
+      console.log("error while adding comment", error);
+    } finally {
+      setDisableComment(false);
+    }
+  }
 
   // Find the post from the mock data (in a real app, you would fetch this from an API)
-  const post = mockPosts.find((p) => p.id === parseInt(postId)) || mockPosts[0];
+  // const post =
+  //   mockPosts.find((p) => p.id === parseInt(postData)) || mockPosts[0];
 
   return (
     <KeyboardAvoidingView
@@ -454,7 +582,7 @@ const ForumPostScreen = () => {
             }}
           >
             <Image
-              source={{ uri: post.authorAvatar }}
+              source={{ uri: post.author.img }}
               style={{
                 height: 48,
                 width: 48,
@@ -465,12 +593,13 @@ const ForumPostScreen = () => {
             />
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={{ fontWeight: "bold", color: "#1E293B" }}>
-                {post.author}
+                {post.author.name}
               </Text>
               <Text style={{ fontSize: 12, color: "#94A3B8" }}>
-                {post.timestamp}
+                {timeAgo(post.createdAt)}
               </Text>
             </View>
+            {/* follow btn */}
             <TouchableOpacity
               style={{
                 backgroundColor: "#9b87f5",
@@ -498,6 +627,17 @@ const ForumPostScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Post Image (if exists) */}
+          {post.img && post.img.trim() != "" && (
+            <View className="mb-6 w-full h-40">
+              <Image
+                source={{ uri: post.img }}
+                className="w-full rounded-xl h-full max-h-80"
+                resizeMode="cover"
+              />
+            </View>
+          )}
 
           {/* Post Content - with decorative patterns */}
           <View
@@ -546,16 +686,7 @@ const ForumPostScreen = () => {
                 position: "relative",
               }}
             >
-              {post.description}
-              {"\n\n"}
-              I've been experimenting with different growing techniques, and I'm
-              curious about what has worked well for others in similar climate
-              zones. Companion planting seems promising, but I'd love to hear
-              some real-world experiences before I commit to rearranging my
-              garden layout.
-              {"\n\n"}
-              My soil is clay-heavy, and I'm in Zone 6b if that helps with any
-              recommendations!
+              {post.content}
             </Text>
           </View>
 
@@ -601,7 +732,7 @@ const ForumPostScreen = () => {
               >
                 <MaterialIcons name="comment" size={16} color="#64748B" />
                 <Text style={{ marginLeft: 4, color: "#64748B" }}>
-                  {mockComments.length} Comments
+                  {post.commentCount} Comments
                 </Text>
               </View>
             </View>
@@ -624,7 +755,7 @@ const ForumPostScreen = () => {
               <Text
                 style={{ fontSize: 18, fontWeight: "bold", color: "#0F172A" }}
               >
-                Comments ({mockComments.length})
+                Comments ({post.commentCount})
               </Text>
               <TouchableOpacity
                 style={{
@@ -659,7 +790,7 @@ const ForumPostScreen = () => {
             >
               <Image
                 source={{
-                  uri: "https://randomuser.me/api/portraits/men/32.jpg",
+                  uri: USER?.img,
                 }}
                 style={{
                   height: 36,
@@ -676,6 +807,8 @@ const ForumPostScreen = () => {
                   fontSize: 14,
                 }}
                 placeholder="Add a comment..."
+                value={newComment}
+                onChangeText={(text) => setNewComment(text)}
               />
               <TouchableOpacity
                 style={{
@@ -688,9 +821,16 @@ const ForumPostScreen = () => {
                   shadowRadius: 6,
                   elevation: 2,
                 }}
+                className={`${disableComment ? "opacity-50" : ""}`}
                 activeOpacity={0.7}
+                onPress={addComment}
+                disabled={disableComment}
               >
-                <Ionicons name="send" size={18} color="#FFFFFF" />
+                {disableComment ? (
+                  <ActivityIndicator size={18} color={"white"} />
+                ) : (
+                  <Ionicons name="send" size={18} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
             </View>
 
@@ -709,9 +849,43 @@ const ForumPostScreen = () => {
                 borderColor: "#F8FAFC",
               }}
             >
-              {mockComments.map((comment) => (
-                <Comment key={comment.id} comment={comment} />
-              ))}
+              {/* {comment.map((comment) => (
+                <Comment key={comment.} comment={comment} />
+              ))} */}
+
+              {post.commentCount !== 0 &&
+              !loadingComment &&
+              comments &&
+              Array.isArray(comments) &&
+              comments.length > 0 ? (
+                comments.map((comment) => (
+                  <Comment
+                    key={comment._id}
+                    comment={comment}
+                    fetchComment={fetchComment}
+                  />
+                ))
+              ) : (
+                <View className="items-center justify-center py-12">
+                  <MaterialIcons
+                    name="chat-bubble-outline"
+                    size={64}
+                    color="#CBD5E1"
+                  />
+                  <Text className="text-slate-400 mt-4 text-center">
+                    {loadingComment
+                      ? "Loading comments..."
+                      : post.commentCount === 0
+                      ? "No comments yet"
+                      : "Unable to load comments"}
+                  </Text>
+                  {post.commentCount === 0 && (
+                    <Text className="text-slate-400 text-sm text-center">
+                      Be the first to start the discussion!
+                    </Text>
+                  )}
+                </View>
+              )}
             </View>
           </View>
         </View>

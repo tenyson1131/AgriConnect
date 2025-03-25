@@ -3,7 +3,12 @@ const mongoose = require("mongoose");
 const PostSchema = mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  img: { type: String, default: "" },
+  author: {
+    id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true },
+    img: { type: String, default: "" },
+  },
   category: {
     type: String,
     enum: ["farmers", "buyers", "general"],

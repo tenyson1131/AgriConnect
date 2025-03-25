@@ -52,3 +52,42 @@ export interface CartItem {
   quantity: number;
   image: string;
 }
+
+export interface PostInterface {
+  _id: string;
+  title: string;
+  content: string;
+  img: string;
+  author: {
+    id: string;
+    name: string;
+    img: string;
+  };
+  category: "farmers" | "buyers" | "general";
+  likes: [string];
+  commentCount: number;
+  createdAt: Date | string;
+}
+
+export interface CommentInterface {
+  _id: string;
+  postId: string;
+  author: {
+    name: string;
+    img: string;
+  };
+  content: string;
+  likes: [string];
+  replies: [
+    {
+      author: {
+        name: string;
+        img: string;
+      };
+      content: string;
+      likes: [string];
+      createdAt: Date | string;
+    }
+  ];
+  createdAt: Date | string;
+}

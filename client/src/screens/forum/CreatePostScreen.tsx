@@ -20,6 +20,7 @@ import {
 import { useRouter } from "expo-router";
 import axios from "axios";
 import Toast from "react-native-toast-message";
+import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("window");
 
@@ -27,16 +28,70 @@ const CreatePostScreen = () => {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [img, setImg] = useState("");
+
   const [selectedTag, setSelectedTag] = useState<
     "general" | "farmers" | "buyers"
   >("general");
   const [contentFocused, setContentFocused] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
 
-  const handleTagSelect = (tag: string) => {
+  const handleTagSelect = (tag: "general" | "farmers" | "buyers") => {
     setSelectedTag(tag);
   };
+
+  async function addPhoto() {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 1,
+      base64: true,
+    });
+
+    if (!result?.canceled) {
+      setImageLoading(true);
+      // uploading img to cloudinary here..
+      const base64Img = `data:image/jpeg;base64,${result?.assets[0].base64}`;
+
+      const data = new FormData();
+      data.append("file", base64Img);
+      data.append("upload_preset", process.env.EXPO_PUBLIC_PRESET_NAME!);
+      data.append("cloud_name", process.env.EXPO_PUBLIC_CLOUD_NAME!);
+
+      fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUD_NAME}/image/upload`,
+        {
+          method: "post",
+          body: data,
+        }
+      )
+        .then((res) => res.json())
+        .then(async (res) => {
+          console.log(res);
+          setImg(res.secure_url);
+          setImageLoading(false);
+          Toast.show({
+            type: "success",
+            text1: "Image Uploaded",
+            text2: "Image successfully added to your post",
+            position: "top",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          setImageLoading(false);
+          Toast.show({
+            type: "error",
+            text1: "Upload Failed",
+            text2: "Could not upload image",
+            position: "top",
+          });
+        });
+    }
+  }
 
   const handleSubmit = async () => {
     if (!title || !content) {
@@ -59,6 +114,7 @@ const CreatePostScreen = () => {
           title,
           content,
           category: selectedTag,
+          img,
         }
       );
 
@@ -74,11 +130,10 @@ const CreatePostScreen = () => {
         router.back();
         setLoading(false);
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.log("post submit error:", error.response.data);
       Toast.show({
         type: "error",
-        // text1: "Error",
         text1: error.response.data.message,
         position: "top",
       });
@@ -132,6 +187,7 @@ const CreatePostScreen = () => {
                 <TextInput
                   className="px-4 py-3 text-base text-gray-800"
                   placeholder="What's your question about?"
+                  multiline={true}
                   value={title}
                   onChangeText={setTitle}
                   placeholderTextColor="#9CA3AF"
@@ -259,17 +315,30 @@ const CreatePostScreen = () => {
             <TouchableOpacity
               className="flex-row items-center p-4 bg-gray-50 border border-gray-200 rounded-xl"
               activeOpacity={0.7}
+              onPress={addPhoto}
             >
               <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
-                <Feather name="image" size={20} color="#4B5563" />
+                {imageLoading ? (
+                  <ActivityIndicator size="small" color="#4B5563" />
+                ) : (
+                  <Feather name="image" size={20} color="#4B5563" />
+                )}
               </View>
               <View className="flex-1">
-                <Text className="text-gray-800 font-medium">Add Photos</Text>
+                <Text className="text-gray-800 font-medium">
+                  {img ? "Image Uploaded" : "Add Photos"}
+                </Text>
                 <Text className="text-gray-500 text-sm">
-                  Share images related to your post
+                  {img
+                    ? "Image added to your post"
+                    : "Share images related to your post"}
                 </Text>
               </View>
-              <Feather name="chevron-right" size={20} color="#9CA3AF" />
+              {img ? (
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+              ) : (
+                <Feather name="chevron-right" size={20} color="#9CA3AF" />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -297,10 +366,12 @@ const CreatePostScreen = () => {
       {/* Enhanced Floating Submit Button */}
       <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
         <TouchableOpacity
-          className="bg-black py-4 rounded-xl items-center flex-row justify-center"
+          className={`bg-black py-4 rounded-xl items-center flex-row justify-center ${
+            imageLoading ? "opacity-50" : ""
+          }`}
           activeOpacity={0.8}
           onPress={handleSubmit}
-          disabled={loading}
+          disabled={loading || imageLoading}
         >
           {!loading ? (
             <View className="flex-row">

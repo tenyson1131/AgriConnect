@@ -6,17 +6,20 @@ const port = process.env.PORT || 3000;
 
 const connectDB = require("./db/db.js");
 
+const User = require("./models/User.js");
+
 // router imports
 const authRouter = require("./routes/authRoutes.js");
 const productRouter = require("./routes/productRoutes.js");
 const cartRouter = require("./routes/cartRoutes.js");
 const postRouter = require("./routes/postRoute.js");
+const userRouter = require("./routes/userRouter.js");
+const commentRouter = require("./routes/commentRoutes.js");
 
 // middelwares
 const cors = require("cors");
 const authMiddleware = require("./middleware/authMiddleware.js");
-const User = require("./models/User.js");
-const userRouter = require("./routes/userRouter.js");
+
 app.use(express.json());
 app.use(cors());
 
@@ -26,6 +29,8 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/post", postRouter);
 app.use("/api/user", userRouter);
+app.use("/api/comment", commentRouter);
+
 // ------------fetch user ----------------
 app.get("/api/get-user", authMiddleware, async (req, res) => {
   const userId = req.user._id;

@@ -1,4 +1,9 @@
-import React, { useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import {
   FontAwesome,
@@ -6,7 +11,10 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import axios from "axios";
+import { PostInterface } from "@/src/types";
+import timeAgo from "@/src/utils/timesAgo";
 
 // Mock data for forum posts
 const mockPosts = [
@@ -97,45 +105,75 @@ const ForumHeader = () => {
 };
 
 // PostCard component
-const PostCard = ({ post }) => {
-  const isFarmer = post.category === "farmers";
+const PostCard = ({ post }: { post: PostInterface }) => {
+  const isFarmer = post.category == "farmers";
+  const isBuyer = post.category == "buyers";
   const router = useRouter();
 
   return (
     <TouchableOpacity
       className="mb-4 bg-white rounded-xl p-4 shadow-sm mx-4"
       activeOpacity={0.7}
-      onPress={() => router.push(`/user/forum/forumPost?postId=${post.id}`)}
+      onPress={() =>
+        router.push(
+          `/user/forum/forumPost?postData=${encodeURIComponent(
+            JSON.stringify(post)
+          )}`
+        )
+      }
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-2">
           <Text className="text-lg font-bold text-slate-800">{post.title}</Text>
           <Text numberOfLines={2} className="text-slate-500 mt-1 mb-3 text-sm">
-            {post.description}
+            {post.content}
           </Text>
         </View>
         <View
           className={`rounded-full py-1 px-3 ${
-            isFarmer ? "bg-emerald-100" : "bg-amber-100"
+            isFarmer
+              ? "bg-emerald-100"
+              : isBuyer
+              ? "bg-amber-100"
+              : "bg-blue-100"
           }`}
         >
-          {isFarmer ? (
-            <Text className="text-xs text-emerald-700 font-medium">
-              Farmers
-            </Text>
-          ) : (
-            <Text className="text-xs text-amber-700 font-medium">Buyers</Text>
-          )}
+          <Text
+            className={`text-xs font-medium ${
+              isFarmer
+                ? "text-emerald-700"
+                : isBuyer
+                ? "text-amber-700"
+                : "text-blue-700"
+            }`}
+          >
+            {isFarmer ? "Farmers" : isBuyer ? "Buyers" : "General"}
+          </Text>
         </View>
       </View>
 
       <View className="flex-row justify-between items-center mt-2 pt-2 border-t border-gray-100">
         <View className="flex-row items-center">
-          <Image
-            source={{ uri: post.authorAvatar }}
+          {/* <Image
+            source={{ uri: post.author.img }}
             className="h-6 w-6 rounded-full"
-          />
-          <Text className="text-slate-600 text-xs ml-2">{post.author}</Text>
+          /> */}
+
+          {post.author.img && post.author.img.trim() !== "" ? (
+            <Image
+              source={{ uri: post.author.img }}
+              className="h-6 w-6 rounded-full"
+            />
+          ) : (
+            <View className="h-6 w-6 rounded-full bg-green-100 items-center justify-center">
+              <Text className="text-[#28a745] text-center">
+                {post.author.name?.charAt(0).toUpperCase() || "U"}
+              </Text>
+            </View>
+          )}
+          <Text className="text-slate-600 text-xs ml-2">
+            {post.author.name}
+          </Text>
         </View>
 
         <View className="flex-row items-center">
@@ -145,9 +183,13 @@ const PostCard = ({ post }) => {
               size={14}
               color="#94a3b8"
             />
-            <Text className="ml-1 text-slate-500 text-xs">{post.comments}</Text>
+            <Text className="ml-1 text-slate-500 text-xs">
+              {post.commentCount}
+            </Text>
           </View>
-          <Text className="text-slate-400 text-xs">{post.timestamp}</Text>
+          <Text className="text-slate-400 text-xs">
+            {timeAgo(post.createdAt)}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -312,7 +354,7 @@ const SortDropdown = ({ sortOption, setSortOption, isOpen, setIsOpen }) => {
 };
 
 // EmptyState component for when no posts match filter
-const EmptyState = () => {
+const EmptyState = ({ router }: any) => {
   return (
     <View className="flex-1 items-center justify-center p-6">
       <MaterialCommunityIcons name="forum-outline" size={64} color="#cbd5e1" />
@@ -326,6 +368,7 @@ const EmptyState = () => {
       <TouchableOpacity
         className="mt-6 bg-blue-500 rounded-full py-3 px-6"
         activeOpacity={0.7}
+        onPress={() => router.push("/user/forum/createPost")}
       >
         <Text className="text-white font-semibold">Create New Post</Text>
       </TouchableOpacity>
@@ -337,17 +380,53 @@ const EmptyState = () => {
 const ForumScreen = () => {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState("all");
+  const [posts, setPosts] = useState<PostInterface[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<PostInterface[]>([]);
+
+  const [activeTab, setActiveTab] = useState<
+    "all" | "farmers" | "buyers" | "trending"
+  >("all");
   const [sortOption, setSortOption] = useState("Latest");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Filter posts based on selected category
-  const filteredPosts =
-    activeTab === "all"
-      ? mockPosts
-      : activeTab === "trending"
-      ? [...mockPosts].sort((a, b) => b.comments - a.comments).slice(0, 3)
-      : mockPosts.filter((post) => post.category === activeTab);
+  useEffect(() => {
+    const _filteredPosts =
+      activeTab == "all"
+        ? posts
+        : activeTab == "trending"
+        ? [...posts].sort((a, b) => b.commentCount - a.commentCount).slice(0, 3)
+        : posts.filter(
+            (post) => post.category.toLowerCase() == activeTab.toLowerCase()
+          );
+
+    setFilteredPosts(_filteredPosts);
+
+    console.log("filtered posts", _filteredPosts);
+  }, [activeTab, posts]);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("in use effect of post screen");
+
+      async function fetchPost() {
+        try {
+          const result = await axios.get(
+            `${process.env.EXPO_PUBLIC_SERVER_URL}/api/post/get-post`
+          );
+
+          if (result) {
+            console.log("result in post screen", result.data);
+            setPosts(result.data.posts);
+          }
+        } catch (error) {
+          console.log("error in post screen", error);
+        }
+      }
+
+      fetchPost();
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -366,12 +445,12 @@ const ForumScreen = () => {
           className="flex-1 pt-4"
         >
           {filteredPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post._id} post={post} />
           ))}
           <View className="h-20" />
         </ScrollView>
       ) : (
-        <EmptyState />
+        <EmptyState router={router} />
       )}
 
       {/* new post btn */}

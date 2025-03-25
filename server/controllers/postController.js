@@ -2,7 +2,7 @@ const Post = require("../models/Post");
 
 async function createPost(req, res) {
   try {
-    const { title, content, category } = req.body;
+    const { title, content, category, img } = req.body;
     if (!title || !content) {
       return res
         .status(400)
@@ -17,7 +17,12 @@ async function createPost(req, res) {
     const newPost = new Post({
       title,
       content,
-      author: userId,
+      img,
+      author: {
+        id: userId,
+        name: req.user.name,
+        img: req.user.img || "",
+      },
       category: category || "general",
     });
 
