@@ -15,7 +15,22 @@ async function signup(req, res) {
 
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      if (user.verified) {
+        return res.status(400).json({ message: "User already exists" });
+      } else {
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+        user.otp = otp;
+        user.otpExpiry = otpExpiry;
+        await user.save();
+
+        await sendOTPEmail(email, otp);
+
+        return res
+          .status(200)
+          .json({ message: "OTP resent, please verify your account" });
+      }
     }
 
     const userRole = role === "farmer" ? "farmer" : "buyer";
@@ -94,7 +109,7 @@ async function login(req, res) {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !user.verified) {
       return res.status(400).json({ message: "User does not exist" });
     }
 

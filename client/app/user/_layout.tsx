@@ -169,12 +169,26 @@ export default function UserLayout() {
           ),
         }}
       />
+
+      {/* not visible in bottom bar -------------------------*/}
       <Tabs.Screen
         name="profile"
         // options={{ tabBarStyle: { display: "none" } }}
         options={{
           href: null,
           title: "Profile",
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color }) => (
+            <Feather name="user" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="farmer"
+        // options={{ tabBarStyle: { display: "none" } }}
+        options={{
+          href: null,
+          title: "farmer",
           tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (
             <Feather name="user" size={24} color={color} />

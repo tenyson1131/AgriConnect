@@ -89,4 +89,135 @@ async function getProductById(req, res) {
   }
 }
 
-module.exports = { createProduct, fetchProducts, getProductById };
+// wishlist-------------------
+// async function addToWishlist(req, res) {
+//   try {
+//     const { productId } = req.body;
+//     if (!productId) {
+//       return res.status(400).json({ message: "Product id is required" });
+//     }
+
+//     const userId = req.user._id;
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const product = await Product.findById(productId);
+//     if (!product) {
+//       return res.status(404).json({ message: "Product not found" });
+//     }
+
+//     if (user.wishlist.includes(productId)) {
+//       return res.status(400).json({ message: "Product already in wishlist" });
+//     }
+
+//     user.wishlist.push(productId);
+//     await user.save();
+
+//     return res.status(200).json({ message: "Product added to wishlist" });
+//   } catch (error) {
+//     console.log("error while adding product to wishlist", error);
+//     return res.status(500).json({
+//       message: "Internal server error while adding product to wishlist",
+//       error: error,
+//     });
+//   }
+// }
+
+// async function removeWishlist(req, res) {
+//   try {
+//     const { productId } = req.body;
+//     if (!productId) {
+//       return res.status(400).json({ message: "Product id is required" });
+//     }
+
+//     const userId = req.user._id;
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     user.wishlist = user.wishlist.filter((id) => id != productId);
+//     await user.save();
+
+//     return res.status(200).json({ message: "Product removed from wishlist" });
+//   } catch (error) {
+//     console.log("error while removing product from wishlist", error);
+//     return res.status(500).json({
+//       message: "Internal server error while removing product from wishlist",
+//       error: error,
+//     });
+//   }
+// }
+
+async function toggleWishlist(req, res) {
+  try {
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ message: "Product id is required" });
+    }
+
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const index = user.wishlist.indexOf(productId);
+    if (index > -1) {
+      user.wishlist.splice(index, 1);
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Product removed from wishlist", added: false });
+    } else {
+      user.wishlist.push(productId);
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Product added to wishlist", added: true });
+    }
+  } catch (error) {
+    console.log("Error in wishlist toggle", error);
+    return res.status(500).json({
+      message: "Internal server error while toggling wishlist",
+      error: error,
+    });
+  }
+}
+
+async function getWishlistProducts(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).populate("wishlist");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ wishlist: user.wishlist });
+  } catch (error) {
+    console.log("error while fetching wishlist", error);
+    return res.status(500).json({
+      message: "Internal server error while fetching wishlist",
+      error: error,
+    });
+  }
+}
+
+module.exports = {
+  createProduct,
+  fetchProducts,
+  getProductById,
+  // addToWishlist,
+  // removeWishlist,
+  toggleWishlist,
+  getWishlistProducts,
+};

@@ -5,12 +5,12 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { CartContext } from "@/context/CartContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Sample cart data
 // const initialCartItems = [

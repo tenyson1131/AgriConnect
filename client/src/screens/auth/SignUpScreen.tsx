@@ -61,6 +61,8 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [otpSent, setOtpSent] = useState(false);
 
+  const [imageLoading, setImageLoading] = useState(false);
+
   // Updated colors based on user type
   const themeColors = {
     buyer: {
@@ -133,6 +135,8 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
     });
 
     if (!result?.canceled) {
+      setImageLoading(true);
+
       // uploading img to cloudinary here..
       const base64Img = `data:image/jpeg;base64,${result?.assets[0].base64}`;
 
@@ -155,8 +159,12 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
             ...prev,
             img: res.secure_url,
           }));
+          setImageLoading(false);
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.log(err);
+          setImageLoading(false);
+        });
     }
   };
 
@@ -870,10 +878,12 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ type }) => {
       {/* Footer with Next/Submit Button */}
       <View className="absolute bottom-0 left-0 right-0 bg-white pt-2 pb-6 px-6 shadow-xl">
         <TouchableOpacity
-          className="py-4 rounded-xl items-center justify-center"
+          className={`py-4 rounded-xl items-center justify-center ${
+            imageLoading ? "opacity-50" : ""
+          }`}
           style={{ backgroundColor: colors.primary }}
           onPress={handleNext}
-          disabled={isLoading}
+          disabled={isLoading || imageLoading}
         >
           {isLoading ? (
             <ActivityIndicator color="white" />

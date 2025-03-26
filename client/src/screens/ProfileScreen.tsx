@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  SafeAreaView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,9 +13,12 @@ import { useRouter } from "expo-router";
 import { UserContext } from "@/context/UserContext";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ProductContext } from "@/context/ProductContext";
 
 const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
   const { USER, loadUser } = useContext(UserContext);
+  const { wishlist } = useContext(ProductContext);
 
   useEffect(() => {
     loadUser();
@@ -71,6 +73,10 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
             );
 
             console.log("result:", result);
+
+            if (result) {
+              loadUser();
+            }
           } catch (error) {
             console.log("error while uploading image Backend", error);
           }
@@ -166,13 +172,22 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
         <View className="flex-row justify-between px-6 mt-4 mb-6">
           {[
             { label: "Orders", value: "27", icon: "package", color: "#818cf8" },
-            { label: "Wishlist", value: "19", icon: "heart", color: "#f87171" },
+            {
+              label: "Wishlist",
+              value: wishlist.length.toString(),
+              icon: "heart",
+              color: "#f87171",
+              href: "/user/profile/wishlist",
+            },
             { label: "Coupons", value: "8", icon: "gift", color: "#fbbf24" },
           ].map((item, index) => (
             <TouchableOpacity
               key={index}
               className="bg-white p-3 rounded-2xl shadow-sm items-center justify-center"
               style={{ width: "30%" }}
+              onPress={() => {
+                if (item.href) router.push(item.href);
+              }}
             >
               <View
                 className="w-10 h-10 rounded-full mb-2 items-center justify-center"
@@ -189,7 +204,78 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
         </View>
 
         {/* Menu Sections */}
-        <View className="px-6 mb-6">
+        <View className="px-6 mb-12">
+          {/* for farmer only */}
+          <View className="mb-6">
+            {USER?.role == "farmer" && (
+              <View className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                {[
+                  {
+                    icon: "shopping-bag",
+                    label: "My Products",
+                    description: "Manage your listed products",
+                  },
+                  {
+                    icon: "plus-circle",
+                    label: "List New Product",
+                    description: "Add a new item to sell",
+                    href: "/user/farmer",
+                  },
+                  {
+                    icon: "truck",
+                    label: "Inventory",
+                    description: "Track your current stock",
+                  },
+                ].map((item, index, array) => (
+                  <TouchableOpacity
+                    key={index}
+                    className={`flex-row items-center p-4 ${
+                      index !== array.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
+                    }`}
+                    onPress={() => {
+                      if (item.href) router.push(item?.href);
+                    }}
+                  >
+                    <View
+                      className="w-10 h-10 rounded-full items-center justify-center"
+                      style={{
+                        backgroundColor:
+                          index === 0
+                            ? "#10b98120"
+                            : index === 1
+                            ? "#9b87f520"
+                            : "#f59e0b20",
+                      }}
+                    >
+                      <Feather
+                        name={item.icon}
+                        size={18}
+                        color={
+                          index === 0
+                            ? "#10b981"
+                            : index === 1
+                            ? "#9b87f5"
+                            : "#f59e0b"
+                        }
+                      />
+                    </View>
+                    <View className="ml-3 flex-1">
+                      <Text className="font-medium text-gray-800">
+                        {item.label}
+                      </Text>
+                      <Text className="text-xs text-gray-500">
+                        {item.description}
+                      </Text>
+                    </View>
+                    <Feather name="chevron-right" size={18} color="#9ca3af" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
           {/* My Shopping Section */}
           <View className="mb-6">
             <Text className="text-sm font-semibold text-gray-800 mb-3 px-1">

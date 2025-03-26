@@ -11,12 +11,14 @@ import {
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { CartContext } from "@/context/CartContext";
 import { useRouter } from "expo-router";
 import { ProductInterface } from "@/src/types";
 import { productTips_benefits } from "./tips_benefits";
+import { toggleWishlist } from "@/src/utils/wishlistController";
+import { ProductContext } from "@/context/ProductContext";
 
 const { width } = Dimensions.get("window");
 
@@ -27,6 +29,7 @@ const ProductDetailScreen = ({
 }) => {
   const router = useRouter();
   const { cart_Loading, addToCart } = useContext(CartContext);
+  const { wishlist, fetchWishlist } = useContext(ProductContext);
 
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -40,7 +43,7 @@ const ProductDetailScreen = ({
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-  const toggleFavorite = () => setIsFavorite((prev) => !prev);
+  // const toggleFavorite = () => setIsFavorite((prev) => !prev);
 
   const tips =
     productTips_benefits[productDetail?.category]?.tips ||
@@ -109,6 +112,27 @@ const ProductDetailScreen = ({
     }
   };
 
+  async function handleWishlist() {
+    try {
+      const result = await toggleWishlist(productDetail?._id);
+      if (result) {
+        // console.log("login result: inside if", result);
+        // if (result.error as == true) {
+        //   Toast.show({
+        //     type: "error",
+        //     // text1: "Error",
+        //     text1: result.message,
+        //     position: "bottom",
+        //   });
+        // }
+
+        fetchWishlist();
+      }
+    } catch (error) {
+      console.log("@# login err:", error);
+    }
+  }
+
   return (
     <View className="flex-1 bg-white">
       <ScrollView
@@ -125,14 +149,19 @@ const ProductDetailScreen = ({
             <Feather name="arrow-left" size={20} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={toggleFavorite}
+            onPress={handleWishlist}
             className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
           >
-            <Feather
+            {/* <Feather
               name="heart"
               size={20}
-              color={isFavorite ? "#FF6B6B" : "#666"}
-            />
+              // color={isFavorite ? "#FF6B6B" : "#666"}
+            /> */}
+            {wishlist?.find((e) => e._id == productDetail?._id) ? (
+              <AntDesign name="heart" size={20} color="red" />
+            ) : (
+              <AntDesign name="hearto" size={20} color="black" />
+            )}
           </TouchableOpacity>
         </View>
 

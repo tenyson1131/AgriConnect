@@ -13,12 +13,16 @@ interface ProductContextType {
   products: ProductInterface[];
   productLoading: boolean;
   fetchProducts: () => Promise<void>;
+  wishlist: ProductInterface[];
+  fetchWishlist: () => Promise<void>;
 }
 
 export const ProductContext = createContext<ProductContextType>({
   products: [],
   productLoading: false,
   fetchProducts: async () => {},
+  wishlist: [],
+  fetchWishlist: async () => {},
 });
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
@@ -26,9 +30,12 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState([]);
   const [productLoading, setProductLoading] = useState(false);
 
+  const [wishlist, setWishlist] = useState([]);
+
   useEffect(() => {
     if (authState?.authenticated) {
       fetchProducts();
+      fetchWishlist();
     } else {
       setProducts([]); // Reset products if logged out
     }
@@ -59,9 +66,30 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  async function fetchWishlist() {
+    try {
+      const result = await axios.get(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/product/get-wishlist`
+      );
+
+      console.log("fetched wishlist result: ", result.data);
+      if (result.data) {
+        setWishlist(result.data.wishlist);
+      }
+    } catch (error) {
+      console.log("error in fetchWishlist: ", error);
+    }
+  }
+
   return (
     <ProductContext.Provider
-      value={{ products, productLoading, fetchProducts }}
+      value={{
+        products,
+        productLoading,
+        fetchProducts,
+        wishlist,
+        fetchWishlist,
+      }}
     >
       {children}
     </ProductContext.Provider>

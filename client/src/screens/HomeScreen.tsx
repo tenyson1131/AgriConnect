@@ -10,11 +10,12 @@ import {
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Entypo, Feather, FontAwesome } from "@expo/vector-icons";
+import { AntDesign, Entypo, Feather, FontAwesome } from "@expo/vector-icons";
 import { RefreshControl } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { ProductContext } from "@/context/ProductContext";
 import { UserContext } from "@/context/UserContext";
+import { toggleWishlist } from "../utils/wishlistController";
 
 const { width } = Dimensions.get("window");
 
@@ -54,7 +55,8 @@ const categories = [
 
 const HomeScreen = () => {
   const { USER } = useContext(UserContext);
-  const { products, fetchProducts } = useContext(ProductContext);
+  const { products, fetchProducts, wishlist, fetchWishlist } =
+    useContext(ProductContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -65,6 +67,27 @@ const HomeScreen = () => {
   }, []);
 
   const router = useRouter?.() || { push: () => {} };
+
+  async function handleWishlist(productId: string) {
+    try {
+      const result = await toggleWishlist(productId);
+      if (result) {
+        // console.log("login result: inside if", result);
+        // if (result.error as == true) {
+        //   Toast.show({
+        //     type: "error",
+        //     // text1: "Error",
+        //     text1: result.message,
+        //     position: "bottom",
+        //   });
+        // }
+
+        fetchWishlist();
+      }
+    } catch (error) {
+      console.log("@# login err:", error);
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -312,6 +335,7 @@ const HomeScreen = () => {
                   paddingVertical: 8,
                   justifyContent: "center",
                 }}
+                onPress={() => router.push("/user/category")}
               >
                 <Text
                   style={{ color: "white", fontWeight: "600", fontSize: 13 }}
@@ -412,8 +436,14 @@ const HomeScreen = () => {
                         shadowRadius: 2,
                         elevation: 2,
                       }}
+                      onPress={() => handleWishlist(product?._id)}
                     >
-                      <Feather name="heart" size={15} color="#9ca3af" />
+                      {/* <Feather name="heart" size={15} color="#9ca3af" /> */}
+                      {wishlist?.find((e) => e._id == product?._id) ? (
+                        <AntDesign name="heart" size={15} color="red" />
+                      ) : (
+                        <AntDesign name="hearto" size={15} color="#9ca3af" />
+                      )}
                     </TouchableOpacity>
                   </View>
 

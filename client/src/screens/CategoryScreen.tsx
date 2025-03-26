@@ -16,8 +16,14 @@ import { ProductContext } from "@/context/ProductContext";
 const { width } = Dimensions.get("window");
 
 const categories = [
-  { name: "Fruits", icon: "nutrition-outline" },
-  { name: "Vegetables", icon: "leaf-outline" },
+  {
+    name: "Fruits",
+    icon: "nutrition-outline",
+  },
+  {
+    name: "Vegetables",
+    icon: "leaf-outline",
+  },
   { name: "Herbs and Spices", icon: "flower-outline" },
   { name: "Grains and Pulses", icon: "grain-outline" },
   { name: "Nuts and Dry Fruits", icon: "sunny-outline" },
@@ -31,14 +37,14 @@ const categories = [
 // Category-specific banners and titles
 const categoryDetails = {
   Vegetables: {
-    banner: "https://via.placeholder.com/800x200",
+    banner: require("@/assets/vegetableCat.jpg"),
     title: "Organic Vegetables",
     subtitle: "Fresh from the farm",
     color: "#4CAF50", // Green
     textColor: "white",
   },
   Fruits: {
-    banner: "https://via.placeholder.com/800x200",
+    banner: require("@/assets/fruitCat.jpg"),
     title: "Fresh Fruits",
     subtitle: "Sweet & Juicy Selection",
     color: "#FF9800", // Orange
@@ -217,12 +223,12 @@ const CategoryScreen = () => {
               {categoryDetails[selectedCategory]?.title || selectedCategory}
             </Text>
 
-            <TouchableOpacity className="flex-row items-center bg-white bg-opacity-20 rounded-full px-3 py-1 mt-2 self-start">
+            {/* <TouchableOpacity className="flex-row items-center bg-white bg-opacity-20 rounded-full px-3 py-1 mt-2 self-start">
               <Ionicons name="location-outline" size={14} color="white" />
               <Text className="text-white text-xs ml-1">
                 ..............................
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Rating dots */}
             <View className="flex-row mt-3">
@@ -237,11 +243,12 @@ const CategoryScreen = () => {
           </View>
 
           {/* Banner Image */}
-          <View className="w-32 h-32 rounded-2xl overflow-hidden bg-white bg-opacity-20">
+          <View className="w-32 h-32 rounded-2xl overflow-hidden bg-whites bg-opacity-20">
             <Image
-              source={{ uri: "https://via.placeholder.com/150" }}
+              // source={require("@/assets/fruitCat.jpg")}
+              source={categoryDetails[selectedCategory]?.banner}
               className="w-full h-full"
-              resizeMode="cover"
+              resizeMode="cover "
             />
           </View>
         </View>
