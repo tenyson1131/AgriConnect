@@ -19,6 +19,7 @@ const commentRouter = require("./routes/commentRoutes.js");
 // middelwares
 const cors = require("cors");
 const authMiddleware = require("./middleware/authMiddleware.js");
+const checkoutRouter = require("./routes/checkoutRoutes.js");
 
 app.use(express.json());
 app.use(cors());
@@ -30,6 +31,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/post", postRouter);
 app.use("/api/user", userRouter);
 app.use("/api/comment", commentRouter);
+app.use("/api/order", checkoutRouter);
 
 // ------------fetch user ----------------
 app.get("/api/get-user", authMiddleware, async (req, res) => {

@@ -5,6 +5,7 @@ import {
   GestureHandlerRootView,
   ScrollView,
 } from "react-native-gesture-handler";
+import CheckoutScreen from "@/src/screens/CheckoutScreen";
 
 export default function cart() {
   return (
@@ -12,5 +13,6 @@ export default function cart() {
     //   <Text>cart</Text>
     // </View>
     <CartScreen />
+    // <CheckoutScreen />
   );
 }

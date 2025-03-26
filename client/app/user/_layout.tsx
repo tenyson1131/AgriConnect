@@ -195,6 +195,18 @@ export default function UserLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="checkout"
+        // options={{ tabBarStyle: { display: "none" } }}
+        options={{
+          href: null,
+          title: "checkout",
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color }) => (
+            <Feather name="user" size={24} color={color} />
+          ),
+        }}
+      />
 
       {/* <Tabs.Screen
         name="home"

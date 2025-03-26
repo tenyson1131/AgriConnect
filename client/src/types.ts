@@ -10,7 +10,12 @@ export interface UserInterface {
     user: string;
     items: CartItem[];
   };
+  wishlist: [string];
+  orderCount: number;
+
   verified: boolean;
+  otp: number;
+  otpExpires: Date | string;
 }
 
 type ProductCategory =
@@ -89,5 +94,34 @@ export interface CommentInterface {
       createdAt: Date | string;
     }
   ];
+  createdAt: Date | string;
+}
+
+export interface OrderInterface {
+  _id: string;
+  buyer: string;
+  sller: string;
+  totalAmount: number;
+  paymentMethod: "COD" | "Online";
+  PaymentStatus: "Pending" | "Success";
+  orderStatus: "Pending" | "Confirmed" | "Shipped" | "Delivered";
+  products: [
+    {
+      _id: string;
+      price: number;
+      quantity: number;
+      productId: ProductInterface;
+    }
+  ];
+  address: {
+    fullName: string;
+    phone: string | number;
+    addressLine1: string;
+    addressLine2: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    pincode: string | number;
+  };
   createdAt: Date | string;
 }

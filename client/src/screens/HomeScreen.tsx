@@ -16,6 +16,8 @@ import { useRouter } from "expo-router";
 import { ProductContext } from "@/context/ProductContext";
 import { UserContext } from "@/context/UserContext";
 import { toggleWishlist } from "../utils/wishlistController";
+import { CartContext } from "@/context/CartContext";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 
@@ -57,6 +59,7 @@ const HomeScreen = () => {
   const { USER } = useContext(UserContext);
   const { products, fetchProducts, wishlist, fetchWishlist } =
     useContext(ProductContext);
+  const { addToCart } = useContext(CartContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -86,6 +89,22 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.log("@# login err:", error);
+    }
+  }
+
+  async function addCart(productId: string) {
+    try {
+      const response = await addToCart(productId, 1);
+      if (response && response.status == 200) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "Product added to cart",
+          position: "top",
+        });
+      }
+    } catch (error) {
+      console.log("error in addCart: ", error);
     }
   }
 
@@ -490,7 +509,10 @@ const HomeScreen = () => {
                         </Text>
                       </View>
 
-                      <TouchableOpacity className="bg-emerald-500 w-8 h-8 rounded-full items-center justify-center">
+                      <TouchableOpacity
+                        className="bg-emerald-500 w-8 h-8 rounded-full items-center justify-center"
+                        onPress={() => addCart(product?._id)}
+                      >
                         <Text className="text-white font-bold text-base">
                           +
                         </Text>

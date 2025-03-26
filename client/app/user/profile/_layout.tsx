@@ -7,6 +7,7 @@ export default function _layout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="wishlist" options={{ headerShown: false }} />
+      <Stack.Screen name="order" options={{ headerShown: false }} />
       <Stack.Screen name="details" />
     </Stack>
   );

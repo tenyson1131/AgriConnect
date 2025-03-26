@@ -24,15 +24,6 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
     loadUser();
   }, []);
 
-  // Mock user data
-  const user = {
-    name: "User 1 (hardcoded)",
-    email: "User.User@example.com",
-    profileImage: "https://randomuser.me/api/portraits/women/44.jpg",
-    level: "Gold Member",
-    points: 0,
-  };
-
   const router = useRouter();
 
   const pickImage = async () => {
@@ -171,7 +162,13 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
         {/* Stats Cards Row */}
         <View className="flex-row justify-between px-6 mt-4 mb-6">
           {[
-            { label: "Orders", value: "27", icon: "package", color: "#818cf8" },
+            {
+              label: "Orders",
+              value: USER?.orderCount?.toString(),
+              icon: "package",
+              color: "#818cf8",
+              href: "/user/profile/order",
+            },
             {
               label: "Wishlist",
               value: wishlist.length.toString(),
@@ -214,6 +211,7 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
                     icon: "shopping-bag",
                     label: "My Products",
                     description: "Manage your listed products",
+                    href: "/user/farmer/sellerOrder",
                   },
                   {
                     icon: "plus-circle",
@@ -287,6 +285,7 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
                   icon: "shopping-bag",
                   label: "Orders",
                   description: "Track, return or buy again",
+                  href: "/user/profile/order",
                 },
                 {
                   icon: "credit-card",
@@ -304,6 +303,9 @@ const ProfileScreen = ({ handleLogout }: { handleLogout: () => void }) => {
                   className={`flex-row items-center p-4 ${
                     index !== array.length - 1 ? "border-b border-gray-100" : ""
                   }`}
+                  onPress={() => {
+                    if (item.href) router.push(item.href);
+                  }}
                 >
                   <View
                     className="w-10 h-10 rounded-full items-center justify-center"

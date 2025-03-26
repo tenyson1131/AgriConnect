@@ -9,7 +9,6 @@ import {
   StatusBar,
   FlatList,
   ImageBackground,
-  SafeAreaView,
   Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -23,6 +22,7 @@ import {
 } from "@expo/vector-icons";
 import { ProductContext } from "@/context/ProductContext";
 import { ProductInterface } from "../types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 
@@ -390,7 +390,7 @@ const WishlistPage = () => {
           backgroundColor: "#2FAB73",
           borderRadius: 14,
         }}
-        onPress={() => router.push("/")}
+        onPress={() => router.push("/user/category")}
       >
         <Text
           style={{

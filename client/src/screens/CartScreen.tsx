@@ -49,7 +49,7 @@ const CartScreen = () => {
 
   // Calculate cart totals
   const itemsTotal = Array.isArray(cart)
-    ? cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    ? cart?.reduce((sum, item) => sum + item.price * item.quantity, 0)
     : 0;
   const discount = 0;
   const total = itemsTotal - discount;
@@ -215,7 +215,10 @@ const CartScreen = () => {
           </View>
 
           {/* Checkout Button */}
-          <TouchableOpacity className="bg-gray-900 rounded-full py-4 items-center">
+          <TouchableOpacity
+            className="bg-gray-900 rounded-full py-4 items-center"
+            onPress={() => router.push("/user/checkout")}
+          >
             <Text className="text-white font-semibold text-base">Checkout</Text>
           </TouchableOpacity>
         </View>

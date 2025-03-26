@@ -19,6 +19,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    orderCount: { type: Number, default: 0 },
 
     // otp verification stuff
     verified: { type: Boolean, default: false },

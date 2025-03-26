@@ -1,653 +1,622 @@
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
+  Image,
   TextInput,
-  Animated,
-  Dimensions,
   StatusBar,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import {
-  FontAwesome,
-  MaterialIcons,
   Ionicons,
-  Feather,
+  MaterialIcons,
+  FontAwesome5,
   AntDesign,
-  MaterialCommunityIcons,
+  Feather,
+  Octicons,
 } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
+import "nativewind";
+import { CartContext } from "@/context/CartContext";
+import axios from "axios";
+import Toast from "react-native-toast-message";
+import { UserContext } from "@/context/UserContext";
 
-const { width } = Dimensions.get("window");
-
-export default function RefinedCheckoutScreen() {
+const CheckoutPage = () => {
   const router = useRouter();
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [deliveryOption, setDeliveryOption] = useState("standard");
-  const [promoCode, setPromoCode] = useState("");
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current; // Changed to start visible
+  const navigation = useNavigation();
 
-  // Address fields
+  const { loadUser } = useContext(UserContext);
+  const { cart_Loading, cart, loadCart, removeFromCart } =
+    useContext(CartContext);
+
+  const [loading, setLoading] = useState(false);
+  const [activeSection, setActiveSection] = useState("delivery");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card");
+
+  // Primary color theme
+  const PRIMARY_COLOR = "#2FAB73"; // Green color
+  const PRIMARY_LIGHT = "rgba(47, 171, 115, 0.08)";
+  const SECONDARY_COLOR = "#219653";
+
+  // Form state
   const [address, setAddress] = useState({
-    line1: "",
-    line2: "",
+    fullName: "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
     city: "",
     state: "",
     pincode: "",
-    country: "United States",
   });
 
-  // Sample cart items with more detailed information
-  const cartItems = [
+  // Calculate order summary
+  const subtotal = Array.isArray(cart?.items)
+    ? cart.items.reduce(
+        (acc, item) => acc + (item?.price || 0) * (item?.quantity || 0),
+        0
+      )
+    : 0;
+  const deliveryFee = 49;
+  const tax = Math.round(subtotal * 0.05); // 5% tax
+  const discount = promoApplied ? Math.round(subtotal * 0.15) : 0; // 15% discount if promo applied
+  const total = subtotal + deliveryFee + tax - discount;
+
+  const handleApplyPromo = () => {
+    if (promoCode.toLowerCase() === "fresh15") {
+      setPromoApplied(true);
+      Alert.alert("Success", "Promo code applied successfully!");
+    } else {
+      Alert.alert("Invalid Code", "The promo code you entered is invalid.");
+    }
+  };
+
+  const handleBack = () => {
+    if (activeSection === "payment") {
+      setActiveSection("delivery");
+    } else {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        router.push("/");
+      }
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (activeSection === "delivery") {
+      // Validate address fields
+      if (
+        !address.fullName ||
+        !address.phone ||
+        !address.addressLine1 ||
+        !address.city ||
+        !address.state ||
+        !address.pincode
+      ) {
+        Alert.alert(
+          "Incomplete Information",
+          "Please fill all the required address fields."
+        );
+        return;
+      }
+      setActiveSection("payment");
+      return;
+    }
+
+    // api call to place order--------
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/order/checkout`,
+        { paymentMethod, address }
+      );
+
+      console.log("Order placed successfully", res.data);
+
+      if (res.status == 200) {
+        loadUser();
+        router.replace("/user/profile/order");
+      }
+    } catch (error) {
+      console.log("error while checkout", error.response);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: error.response.data.message,
+        position: "bottom",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const PaymentOptions = [
     {
-      id: 1,
-      name: "Organic Avocados",
-      description: "Ripe & Ready to Eat",
-      price: 4.99,
-      quantity: 3,
-      image: "avocado",
-      organic: true,
-      weight: "250g each",
+      id: "card",
+      name: "Debit/Credit Card",
+      icon: <FontAwesome5 name="credit-card" size={18} color={PRIMARY_COLOR} />,
     },
     {
-      id: 2,
-      name: "Fresh Strawberries",
-      description: "Sweet & Juicy",
-      price: 3.49,
-      quantity: 1,
-      image: "strawberry",
-      organic: true,
-      weight: "400g box",
+      id: "upi",
+      name: "UPI Payment",
+      icon: (
+        <FontAwesome5
+          name="money-bill-wave"
+          size={18}
+          color={SECONDARY_COLOR}
+        />
+      ),
     },
     {
-      id: 3,
-      name: "Farm Fresh Eggs",
-      description: "Free-Range Brown",
-      price: 5.29,
-      quantity: 1,
-      image: "eggs",
-      organic: false,
-      weight: "12 pack",
+      id: "COD",
+      name: "Cash on Delivery",
+      icon: <MaterialIcons name="payments" size={18} color="#F2994A" />,
     },
   ];
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const deliveryFee = deliveryOption === "express" ? 5.99 : 2.99;
-  const discount = 2.5; // Example discount
-  const tax = subtotal * 0.08;
-  const total = subtotal + deliveryFee + tax - discount;
-
-  // Header animation for title - removed to fix glitching
-
-  const renderProductImage = (imageName) => {
-    // This uses a monochromatic design instead of gradients
-    const bgColors = {
-      avocado: "bg-emerald-100",
-      strawberry: "bg-rose-100",
-      eggs: "bg-amber-100",
-    };
-
-    const iconColors = {
-      avocado: "#10b981",
-      strawberry: "#e11d48",
-      eggs: "#f59e0b",
-    };
-
-    return (
-      <View
-        className={`h-16 w-16 ${bgColors[imageName]} rounded-2xl items-center justify-center shadow-sm`}
-      >
-        <MaterialCommunityIcons
-          name={
-            imageName === "avocado"
-              ? "fruit-pear"
-              : imageName === "strawberry"
-              ? "fruit-cherries"
-              : "egg"
-          }
-          size={28}
-          color={iconColors[imageName]}
-        />
-      </View>
-    );
-  };
-
-  return (
-    <View className="flex-1 bg-gray-50">
-      {/* Custom Status Bar */}
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="transparent"
-        translucent
-      />
-
-      {/* Modern Minimalist Header - Fixed to prevent glitching */}
-      <View className="pt-12 pb-4 px-5 bg-white">
-        <View className="flex-row justify-between items-center">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="h-10 w-10 bg-gray-100 rounded-full items-center justify-center"
-          >
-            <Ionicons name="arrow-back" size={22} color="#374151" />
-          </TouchableOpacity>
-
-          <View>
-            {/* Removed animated text that was causing glitching */}
-            <Text className="text-gray-900 text-lg font-bold">Checkout</Text>
-          </View>
-
-          <TouchableOpacity className="h-10 w-10 bg-gray-100 rounded-full items-center justify-center">
-            <AntDesign name="questioncircleo" size={20} color="#374151" />
-          </TouchableOpacity>
+  const renderDeliveryDetails = () => (
+    <View className="mx-4 mt-0 bg-white rounded-2xl overflow-hidden shadow-md">
+      <View className="flex-row items-center p-4 border-b border-gray-100">
+        <View className="w-7 h-7 rounded-full bg-emerald-500 items-center justify-center mr-3">
+          <Feather name="map-pin" size={16} color="#ffffff" />
         </View>
-
-        {/* Progress Indicator */}
-        <View className="flex-row items-center justify-between mt-4 px-4">
-          <View className="items-center">
-            <View className="h-8 w-8 rounded-full bg-emerald-500 items-center justify-center">
-              <Feather name="shopping-bag" size={16} color="white" />
-            </View>
-            <Text className="text-xs text-gray-600 mt-1">Cart</Text>
-          </View>
-
-          <View className="flex-1 h-1 bg-emerald-100 mx-2">
-            <View className="w-full h-full bg-emerald-500" />
-          </View>
-
-          <View className="items-center">
-            <View className="h-8 w-8 rounded-full bg-emerald-500 items-center justify-center">
-              <Feather name="credit-card" size={16} color="white" />
-            </View>
-            <Text className="text-xs text-gray-600 mt-1">Payment</Text>
-          </View>
-
-          <View className="flex-1 h-1 bg-gray-200 mx-2" />
-
-          <View className="items-center">
-            <View className="h-8 w-8 rounded-full bg-gray-200 items-center justify-center">
-              <Feather name="check" size={16} color="#9CA3AF" />
-            </View>
-            <Text className="text-xs text-gray-400 mt-1">Complete</Text>
-          </View>
-        </View>
+        <Text className="text-lg font-bold text-gray-800 tracking-wide">
+          Delivery Details
+        </Text>
       </View>
 
-      {/* Main Content - Removed Animated.ScrollView to fix glitching */}
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-      >
-        {/* Order Summary Card */}
-        <View className="mx-4 mt-6 mb-2">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-gray-800 text-base font-bold">
-              Order Summary
+      <View className="p-4">
+        <View className="mb-4">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              Full Name
             </Text>
-            <TouchableOpacity className="flex-row items-center py-1 px-3 bg-gray-100 rounded-full">
-              <Text className="text-gray-700 text-xs font-medium mr-1">
-                {cartItems.length} items
-              </Text>
-              <Feather name="chevron-down" size={14} color="#4B5563" />
-            </TouchableOpacity>
-          </View>
-
-          <View className="bg-white rounded-3xl shadow-md overflow-hidden">
-            {/* Order items - removed Animated.View to fix glitching */}
-            <View className="p-4">
-              {cartItems.map((item, index) => (
-                <View
-                  key={item.id}
-                  className={`flex-row py-3 ${
-                    index < cartItems.length - 1
-                      ? "border-b border-gray-100"
-                      : ""
-                  }`}
-                >
-                  {renderProductImage(item.image)}
-
-                  <View className="flex-1 ml-3 justify-center">
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-row items-center flex-1 pr-2">
-                        <Text className="text-gray-900 font-semibold flex-1">
-                          {item.name}
-                        </Text>
-                        {item.organic && (
-                          <View className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 rounded-full">
-                            <Text className="text-emerald-600 text-xs">
-                              Organic
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text className="text-gray-900 font-bold">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </Text>
-                    </View>
-
-                    <View className="flex-row justify-between items-center mt-1">
-                      <Text className="text-gray-500 text-xs">
-                        {item.weight}
-                      </Text>
-
-                      <View className="flex-row items-center bg-gray-50 rounded-full border border-gray-100">
-                        <TouchableOpacity className="h-6 w-6 items-center justify-center">
-                          <Feather name="minus" size={12} color="#4B5563" />
-                        </TouchableOpacity>
-                        <Text className="min-w-6 text-center text-gray-800 text-xs font-medium">
-                          {item.quantity}
-                        </Text>
-                        <TouchableOpacity className="h-6 w-6 items-center justify-center">
-                          <Feather name="plus" size={12} color="#4B5563" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-
-            {/* Order summary footer with delivery estimate */}
-            <View className="bg-gray-50 p-4">
-              <View className="flex-row items-center">
-                <View className="h-8 w-8 bg-white rounded-full items-center justify-center shadow-sm">
-                  <AntDesign name="clockcircleo" size={16} color="#4B5563" />
-                </View>
-                <View className="ml-3">
-                  <Text className="text-gray-600 text-xs">
-                    Estimated delivery time
-                  </Text>
-                  <Text className="text-gray-800 font-medium">
-                    Today, 35-45 min
-                  </Text>
-                </View>
-              </View>
-            </View>
+            <TextInput
+              className={`h-12 border ${
+                address.fullName
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="Enter your full name"
+              value={address.fullName}
+              onChangeText={(text) =>
+                setAddress({ ...address, fullName: text })
+              }
+            />
           </View>
         </View>
 
-        {/* NEW SECTION: Delivery Address */}
-        <View className="mx-4 mt-5">
-          <Text className="text-gray-800 text-base font-bold mb-3">
-            Delivery Address
-          </Text>
-          <View className="bg-white rounded-3xl shadow-md overflow-hidden p-4">
-            <View className="mb-3">
-              <Text className="text-gray-600 text-xs mb-1">Address Line 1</Text>
-              <TextInput
-                value={address.line1}
-                onChangeText={(text) => setAddress({ ...address, line1: text })}
-                placeholder="Street address"
-                className="bg-gray-50 p-3 rounded-xl text-gray-800"
-              />
-            </View>
-
-            <View className="mb-3">
-              <Text className="text-gray-600 text-xs mb-1">
-                Address Line 2 (Optional)
-              </Text>
-              <TextInput
-                value={address.line2}
-                onChangeText={(text) => setAddress({ ...address, line2: text })}
-                placeholder="Apt, Suite, Building, etc."
-                className="bg-gray-50 p-3 rounded-xl text-gray-800"
-              />
-            </View>
-
-            <View className="flex-row mb-3">
-              <View className="flex-1 mr-2">
-                <Text className="text-gray-600 text-xs mb-1">City</Text>
-                <TextInput
-                  value={address.city}
-                  onChangeText={(text) =>
-                    setAddress({ ...address, city: text })
-                  }
-                  placeholder="City"
-                  className="bg-gray-50 p-3 rounded-xl text-gray-800"
-                />
-              </View>
-
-              <View className="flex-1 ml-2">
-                <Text className="text-gray-600 text-xs mb-1">State</Text>
-                <TextInput
-                  value={address.state}
-                  onChangeText={(text) =>
-                    setAddress({ ...address, state: text })
-                  }
-                  placeholder="State"
-                  className="bg-gray-50 p-3 rounded-xl text-gray-800"
-                />
-              </View>
-            </View>
-
-            <View className="flex-row mb-3">
-              <View className="flex-1 mr-2">
-                <Text className="text-gray-600 text-xs mb-1">PIN Code</Text>
-                <TextInput
-                  value={address.pincode}
-                  onChangeText={(text) =>
-                    setAddress({ ...address, pincode: text })
-                  }
-                  placeholder="Postal code"
-                  keyboardType="number-pad"
-                  className="bg-gray-50 p-3 rounded-xl text-gray-800"
-                />
-              </View>
-
-              <View className="flex-1 ml-2">
-                <Text className="text-gray-600 text-xs mb-1">Country</Text>
-                <View className="bg-gray-50 p-3 rounded-xl flex-row justify-between items-center">
-                  <Text className="text-gray-800">{address.country}</Text>
-                  <Feather name="chevron-down" size={16} color="#4B5563" />
-                </View>
-              </View>
-            </View>
-
-            <View className="flex-row items-center mt-2">
-              <TouchableOpacity className="h-5 w-5 rounded border border-emerald-500 bg-emerald-50 items-center justify-center mr-2">
-                <Feather name="check" size={12} color="#10b981" />
-              </TouchableOpacity>
-              <Text className="text-gray-600 text-sm">
-                Save address for future orders
-              </Text>
-            </View>
+        <View className="mb-4">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              Phone Number
+            </Text>
+            <TextInput
+              className={`h-12 border ${
+                address.phone
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="Enter your phone number"
+              value={address.phone}
+              onChangeText={(text) => setAddress({ ...address, phone: text })}
+              keyboardType="phone-pad"
+            />
           </View>
         </View>
 
-        {/* Delivery Options */}
-        <View className="mx-4 mt-5">
-          <Text className="text-gray-800 text-base font-bold mb-3">
-            Delivery Options
-          </Text>
-          <View className="bg-white rounded-3xl shadow-md overflow-hidden">
-            <TouchableOpacity
-              className={`p-4 ${
-                deliveryOption === "standard" ? "bg-emerald-50" : "bg-white"
-              }`}
-              onPress={() => setDeliveryOption("standard")}
-            >
-              <View className="flex-row items-center">
-                <View
-                  className={`w-6 h-6 rounded-full ${
-                    deliveryOption === "standard"
-                      ? "bg-emerald-500"
-                      : "border-2 border-gray-300"
-                  } items-center justify-center`}
-                >
-                  {deliveryOption === "standard" && (
-                    <Feather name="check" size={14} color="white" />
-                  )}
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <Text className="text-gray-800 font-bold">
-                    Standard Delivery
-                  </Text>
-                  <Text className="text-gray-500 text-xs mt-0.5">
-                    Estimated delivery: 35-45 minutes
-                  </Text>
-                </View>
-
-                <View className="items-end">
-                  <Text className="text-gray-800 font-bold">$2.99</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <View className="h-0.5 bg-gray-100" />
-
-            <TouchableOpacity
-              className={`p-4 ${
-                deliveryOption === "express" ? "bg-emerald-50" : "bg-white"
-              }`}
-              onPress={() => setDeliveryOption("express")}
-            >
-              <View className="flex-row items-center">
-                <View
-                  className={`w-6 h-6 rounded-full ${
-                    deliveryOption === "express"
-                      ? "bg-emerald-500"
-                      : "border-2 border-gray-300"
-                  } items-center justify-center`}
-                >
-                  {deliveryOption === "express" && (
-                    <Feather name="check" size={14} color="white" />
-                  )}
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <View className="flex-row items-center">
-                    <Text className="text-gray-800 font-bold">
-                      Express Delivery
-                    </Text>
-                    <View className="ml-2 px-2 py-0.5 bg-amber-100 rounded-full">
-                      <Text className="text-amber-700 text-xs font-medium">
-                        Priority
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="text-gray-500 text-xs mt-0.5">
-                    Estimated delivery: 15-20 minutes
-                  </Text>
-                </View>
-
-                <View className="items-end">
-                  <Text className="text-gray-800 font-bold">$5.99</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+        <View className="mb-4">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              Address Line 1
+            </Text>
+            <TextInput
+              className={`h-12 border ${
+                address.addressLine1
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="Street address, House no."
+              value={address.addressLine1}
+              onChangeText={(text) =>
+                setAddress({ ...address, addressLine1: text })
+              }
+            />
           </View>
         </View>
 
-        {/* Payment Methods */}
-        <View className="mx-4 mt-5">
-          <Text className="text-gray-800 text-base font-bold mb-3">
-            Payment Method
-          </Text>
-
-          <View className="bg-white rounded-3xl shadow-md overflow-hidden">
-            <TouchableOpacity
-              className={`p-4 ${
-                paymentMethod === "card" ? "bg-emerald-50" : "bg-white"
-              }`}
-              onPress={() => setPaymentMethod("card")}
-            >
-              <View className="flex-row items-center">
-                <View
-                  className={`w-6 h-6 rounded-full ${
-                    paymentMethod === "card"
-                      ? "bg-emerald-500"
-                      : "border-2 border-gray-300"
-                  } items-center justify-center`}
-                >
-                  {paymentMethod === "card" && (
-                    <Feather name="check" size={14} color="white" />
-                  )}
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <Text className="text-gray-800 font-bold">Credit Card</Text>
-                  <Text className="text-gray-500 text-xs mt-0.5">
-                    **** **** **** 4389
-                  </Text>
-                </View>
-
-                <View className="flex-row items-center">
-                  <FontAwesome name="cc-visa" size={24} color="#1434CB" />
-                  <TouchableOpacity className="ml-2 p-1">
-                    <Feather name="more-vertical" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <View className="h-0.5 bg-gray-100" />
-
-            <TouchableOpacity
-              className={`p-4 ${
-                paymentMethod === "apple" ? "bg-emerald-50" : "bg-white"
-              }`}
-              onPress={() => setPaymentMethod("apple")}
-            >
-              <View className="flex-row items-center">
-                <View
-                  className={`w-6 h-6 rounded-full ${
-                    paymentMethod === "apple"
-                      ? "bg-emerald-500"
-                      : "border-2 border-gray-300"
-                  } items-center justify-center`}
-                >
-                  {paymentMethod === "apple" && (
-                    <Feather name="check" size={14} color="white" />
-                  )}
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <Text className="text-gray-800 font-bold">Apple Pay</Text>
-                </View>
-
-                <View className="flex-row items-center">
-                  <AntDesign name="apple1" size={20} color="#000" />
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <View className="h-0.5 bg-gray-100" />
-
-            <TouchableOpacity
-              className={`p-4 ${
-                paymentMethod === "paypal" ? "bg-emerald-50" : "bg-white"
-              }`}
-              onPress={() => setPaymentMethod("paypal")}
-            >
-              <View className="flex-row items-center">
-                <View
-                  className={`w-6 h-6 rounded-full ${
-                    paymentMethod === "paypal"
-                      ? "bg-emerald-500"
-                      : "border-2 border-gray-300"
-                  } items-center justify-center`}
-                >
-                  {paymentMethod === "paypal" && (
-                    <Feather name="check" size={14} color="white" />
-                  )}
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <Text className="text-gray-800 font-bold">PayPal</Text>
-                </View>
-
-                <View className="flex-row items-center">
-                  <FontAwesome name="paypal" size={20} color="#003087" />
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <View className="h-0.5 bg-gray-100" />
-
-            <TouchableOpacity className="p-4 flex-row items-center">
-              <View className="w-6 h-6 rounded-full bg-emerald-100 items-center justify-center">
-                <Feather name="plus" size={14} color="#10b981" />
-              </View>
-              <Text className="ml-3 text-emerald-500 font-medium">
-                Add New Payment Method
-              </Text>
-            </TouchableOpacity>
+        <View className="mb-4">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              Address Line 2 (Optional)
+            </Text>
+            <TextInput
+              className={`h-12 border ${
+                address.addressLine2
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="Apartment, building, floor, etc."
+              value={address.addressLine2}
+              onChangeText={(text) =>
+                setAddress({ ...address, addressLine2: text })
+              }
+            />
           </View>
         </View>
 
-        {/* Promo Code Section */}
-        <View className="mx-4 mt-5">
-          <Text className="text-gray-800 text-base font-bold mb-3">
-            Promo Code
-          </Text>
-          <View className="bg-white rounded-3xl shadow-md overflow-hidden p-4">
-            <View className="flex-row">
-              <TextInput
-                placeholder="Enter promo code"
-                value={promoCode}
-                onChangeText={setPromoCode}
-                className="bg-gray-50 p-3 flex-1 rounded-l-xl text-gray-800"
-              />
-              <TouchableOpacity className="bg-emerald-500 px-4 rounded-r-xl items-center justify-center">
-                <Text className="text-white font-medium">Apply</Text>
-              </TouchableOpacity>
-            </View>
+        <View className="flex-row justify-between mb-4">
+          <View className="w-[48%]">
+            <Text className="text-sm font-medium text-gray-600 mb-2">City</Text>
+            <TextInput
+              className={`h-12 border ${
+                address.city
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="City"
+              value={address.city}
+              onChangeText={(text) => setAddress({ ...address, city: text })}
+            />
+          </View>
+          <View className="w-[48%]">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              State
+            </Text>
+            <TextInput
+              className={`h-12 border ${
+                address.state
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="State"
+              value={address.state}
+              onChangeText={(text) => setAddress({ ...address, state: text })}
+            />
           </View>
         </View>
 
-        {/* Space for bottom summary bar */}
-        <View className="h-48" />
-      </ScrollView>
-
-      {/* Bottom Payment Bar */}
-      <View className="absolute bottom-0 left-0 right-0">
-        <View className="p-5 bg-white border-t border-gray-100 shadow-2xl rounded-t-3xl">
-          {/* Summary Cards */}
-          <View className="flex-row mb-4">
-            <View className="flex-1 mr-2 bg-gray-50 p-3 rounded-2xl">
-              <Text className="text-gray-500 text-xs">Subtotal</Text>
-              <Text className="text-gray-900 font-bold">
-                ${subtotal.toFixed(2)}
-              </Text>
-            </View>
-
-            <View className="flex-1 mx-1 bg-gray-50 p-3 rounded-2xl">
-              <Text className="text-gray-500 text-xs">Tax & Fee</Text>
-              <Text className="text-gray-900 font-bold">
-                ${(tax + deliveryFee).toFixed(2)}
-              </Text>
-            </View>
-
-            <View className="flex-1 ml-2 bg-emerald-50 p-3 rounded-2xl">
-              <Text className="text-emerald-600 text-xs">Discount</Text>
-              <Text className="text-emerald-600 font-bold">-$2.50</Text>
-            </View>
-          </View>
-
-          {/* Total & Checkout Button */}
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-4">
-              <Text className="text-gray-500 text-xs">Total</Text>
-              <View className="flex-row items-center">
-                <Text className="text-gray-900 font-bold text-2xl">
-                  ${total.toFixed(2)}
-                </Text>
-                <AntDesign
-                  name="infocirlceo"
-                  size={14}
-                  color="#9CA3AF"
-                  className="ml-1"
-                />
-              </View>
-            </View>
-
-            <TouchableOpacity className="bg-emerald-500 py-4 px-6 rounded-2xl flex-row items-center shadow-sm">
-              <Text className="text-white font-bold text-base">
-                Place Order
-              </Text>
-              <Feather
-                name="arrow-right"
-                size={18}
-                color="white"
-                className="ml-2"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Security Note */}
-          <View className="flex-row justify-center items-center mt-3">
-            <Feather name="shield" size={12} color="#9CA3AF" />
-            <Text className="text-gray-400 text-xs ml-1">Secure Checkout</Text>
+        <View className="mb-4">
+          <View className="w-[48%]">
+            <Text className="text-sm font-medium text-gray-600 mb-2">
+              Pincode
+            </Text>
+            <TextInput
+              className={`h-12 border ${
+                address.pincode
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              } rounded-xl px-4 text-gray-800`}
+              placeholder="Pincode"
+              value={address.pincode}
+              onChangeText={(text) => setAddress({ ...address, pincode: text })}
+              keyboardType="numeric"
+              maxLength={6}
+            />
           </View>
         </View>
       </View>
     </View>
   );
-}
+
+  const renderPaymentSection = () => (
+    <View className="mx-4 mt-0 bg-white rounded-2xl overflow-hidden shadow-md">
+      <View className="flex-row items-center p-4 border-b border-gray-100">
+        <View className="w-7 h-7 rounded-full bg-emerald-500 items-center justify-center mr-3">
+          <MaterialIcons name="payment" size={16} color="#ffffff" />
+        </View>
+        <Text className="text-lg font-bold text-gray-800 tracking-wide">
+          Payment Method
+        </Text>
+      </View>
+
+      <View className="p-4">
+        {PaymentOptions.map((option) => (
+          <TouchableOpacity
+            key={option.id}
+            className={`flex-row items-center justify-between py-3.5 px-4 border mb-3.5 rounded-xl ${
+              paymentMethod === option.id
+                ? `border-emerald-500 bg-emerald-50`
+                : `border-gray-200 bg-gray-50`
+            }`}
+            onPress={() => setPaymentMethod(option.id)}
+          >
+            <View className="flex-row items-center">
+              <View className="mr-3.5">{option.icon}</View>
+              <Text
+                className={`text-base ${
+                  paymentMethod === option.id
+                    ? "font-semibold text-emerald-600"
+                    : "font-medium text-gray-700"
+                }`}
+              >
+                {option.name}
+              </Text>
+            </View>
+            <View
+              className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
+                paymentMethod === option.id
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}
+            >
+              {paymentMethod === option.id && (
+                <View className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              )}
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Promo Code Section */}
+      <View className="p-4 border-t border-gray-100">
+        <View className="flex-row items-center mb-3.5">
+          <Octicons name="tag" size={16} color="#666666" />
+          <Text className="text-base font-semibold text-gray-800 ml-2">
+            Promo Code
+          </Text>
+        </View>
+
+        <View className="flex-row items-center">
+          <TextInput
+            className="flex-1 h-12 border border-gray-200 rounded-xl px-4 text-gray-800 mr-3 bg-gray-50"
+            placeholder="Enter promo code"
+            value={promoCode}
+            onChangeText={setPromoCode}
+          />
+          <TouchableOpacity
+            className={`h-12 px-4 rounded-xl items-center justify-center ${
+              promoCode ? "bg-emerald-500" : "bg-gray-400"
+            }`}
+            onPress={handleApplyPromo}
+            disabled={!promoCode}
+          >
+            <Text className="text-base font-semibold text-white">Apply</Text>
+          </TouchableOpacity>
+        </View>
+
+        {promoApplied && (
+          <View className="flex-row items-center justify-between mt-3.5 p-3.5 bg-emerald-50 rounded-xl">
+            <View className="flex-row items-center">
+              <AntDesign name="checkcircle" size={16} color={PRIMARY_COLOR} />
+              <Text className="text-sm font-medium text-emerald-600 ml-2">
+                FRESH15 applied - 15% off
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                setPromoCode("");
+                setPromoApplied(false);
+              }}
+            >
+              <AntDesign name="close" size={16} color="#666666" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      {/* Header */}
+      <View className="h-[60px] flex-row items-center justify-between px-4 bg-white border-b border-gray-100 shadow-sm">
+        <TouchableOpacity
+          className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+          onPress={handleBack}
+        >
+          <Ionicons name="arrow-back" size={22} color="#000000" />
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-gray-900 tracking-wide">
+          Checkout
+        </Text>
+        <View className="w-10" />
+      </View>
+
+      {/* Progress Indicator */}
+      <View className="flex-row items-center justify-center py-5 bg-white border-b border-gray-100">
+        <View className="items-center">
+          <View className="w-8 h-8 rounded-full bg-emerald-500 items-center justify-center">
+            <Text className="text-white text-sm font-semibold">1</Text>
+          </View>
+          <Text className="mt-1.5 text-xs font-medium text-gray-800">
+            Delivery
+          </Text>
+        </View>
+        <View
+          className={`w-16 h-0.5 mx-3 ${
+            activeSection === "payment" ? "bg-emerald-500" : "bg-gray-200"
+          }`}
+        />
+        <View className="items-center">
+          <View
+            className={`w-8 h-8 rounded-full items-center justify-center ${
+              activeSection === "payment" ? "bg-emerald-500" : "bg-gray-200"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                activeSection === "payment" ? "text-white" : "text-gray-500"
+              }`}
+            >
+              2
+            </Text>
+          </View>
+          <Text
+            className={`mt-1.5 text-xs font-medium ${
+              activeSection === "payment" ? "text-gray-800" : "text-gray-500"
+            }`}
+          >
+            Payment
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Order Summary */}
+        <View className="m-4 bg-white rounded-2xl overflow-hidden shadow-md">
+          <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
+            <Text className="text-lg font-bold text-gray-800 tracking-wide">
+              Order Summary
+            </Text>
+            <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
+              <Text className="text-xs font-bold text-white">
+                {cart.length}
+              </Text>
+            </View>
+          </View>
+
+          {/* Order Items */}
+          <View className="p-4">
+            {Array.isArray(cart) &&
+              cart?.map((item, index) => (
+                <View
+                  className={`flex-row py-3.5 ${
+                    index < cart.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
+                  key={item._id}
+                >
+                  <Image
+                    source={{ uri: item.image }}
+                    className="w-[75px] h-[75px] rounded-xl bg-gray-100"
+                  />
+                  <View className="flex-1 ml-3.5 justify-between">
+                    <View className="flex-row justify-between items-start">
+                      <Text className="text-base font-semibold text-gray-800 flex-1 mr-2 leading-5">
+                        {item.name}
+                      </Text>
+                      <Text className="text-base font-bold text-gray-800">
+                        ₹{item.price}
+                      </Text>
+                    </View>
+                    <Text className="text-sm text-gray-500 my-1">
+                      {item.category}
+                    </Text>
+                    <View className="flex-row items-center justify-between mt-2">
+                      <View className="bg-gray-200 px-2.5 py-1 rounded-md">
+                        <Text className="text-sm font-medium text-gray-700">
+                          Qty: {item.quantity}
+                        </Text>
+                      </View>
+                      <Text className="text-base font-bold text-emerald-600">
+                        ₹{item.price * item.quantity}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+          </View>
+        </View>
+
+        {activeSection === "delivery"
+          ? renderDeliveryDetails()
+          : renderPaymentSection()}
+
+        {/* Order Total */}
+        <View className="mx-4 mt-0 mb-24 bg-white rounded-2xl overflow-hidden shadow-md">
+          <View className="px-4 py-4 border-b border-gray-100">
+            <Text className="text-lg font-bold text-gray-800 tracking-wide">
+              Price Details
+            </Text>
+          </View>
+
+          <View className="p-4">
+            <View className="flex-row justify-between mb-3.5">
+              <Text className="text-base text-gray-600">Subtotal</Text>
+              <Text className="text-base font-semibold text-gray-800">
+                ₹{subtotal}
+              </Text>
+            </View>
+
+            <View className="flex-row justify-between mb-3.5">
+              <Text className="text-base text-gray-600">Delivery Fee</Text>
+              <Text className="text-base font-semibold text-gray-800">
+                ₹{deliveryFee}
+              </Text>
+            </View>
+
+            <View className="flex-row justify-between mb-3.5">
+              <Text className="text-base text-gray-600">Tax (5%)</Text>
+              <Text className="text-base font-semibold text-gray-800">
+                ₹{tax}
+              </Text>
+            </View>
+
+            {promoApplied && (
+              <View className="flex-row justify-between mb-3.5">
+                <Text className="text-base font-medium text-emerald-600">
+                  Discount (15%)
+                </Text>
+                <Text className="text-base font-semibold text-emerald-600">
+                  -₹{discount}
+                </Text>
+              </View>
+            )}
+
+            <View className="flex-row justify-between mt-1.5 pt-4 border-t border-gray-100">
+              <Text className="text-lg font-bold text-gray-800">
+                Total Amount
+              </Text>
+              <Text className="text-xl font-bold text-emerald-600">
+                ₹{total}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View className="absolute bottom-0 left-0 right-0 p-4 pt-3 pb-6 gap-4 bg-white border-t border-gray-100 shadow-lg">
+        <TouchableOpacity
+          className="h-14 bg-emerald-500 rounded-xl items-center justify-center shadow-md shadow-emerald-200"
+          onPress={handlePlaceOrder}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text className="text-lg font-bold text-white tracking-wide">
+              {activeSection === "delivery"
+                ? "Continue to Payment"
+                : "Place Order"}
+            </Text>
+          )}
+        </TouchableOpacity>
+        {/* force buy */}
+        <TouchableOpacity
+          className={`${
+            activeSection == "delivery" && "hidden"
+          } h-14 bg-emerald-800 rounded-xl items-center justify-center shadow-md shadow-emerald-200`}
+          onPress={handlePlaceOrder}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text className="text-lg font-bold text-white tracking-wide">
+              Force buy order
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  );
+};
+
+export default CheckoutPage;
