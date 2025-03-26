@@ -409,7 +409,7 @@ const ForumPostScreen = () => {
     setLoadingComment(true);
     try {
       const result = await axios.get(
-        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/comment/get-comment/${post._id}`
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/comment/get-comment/${post?._id}`
       );
 
       if (result) {
@@ -455,6 +455,7 @@ const ForumPostScreen = () => {
       setPost((prev) =>
         prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev
       );
+      fetchComment();
       // if (result) {
       //   console.log("result in post screen", result.data);
       // }
