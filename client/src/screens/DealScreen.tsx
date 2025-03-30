@@ -425,7 +425,7 @@ const DealsScreen = () => {
                   elevation: 2,
                   overflow: "hidden",
                 }}
-                onPress={() => router.push(`/products/${deal._id}`)}
+                onPress={() => router.push(`/user/comingSoon`)}
               >
                 {/* Sophisticated Image Display */}
                 <View style={{ position: "relative" }}>

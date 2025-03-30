@@ -30,6 +30,7 @@ const ProductDetailScreen = ({
   const router = useRouter();
   const { cart_Loading, addToCart } = useContext(CartContext);
   const { wishlist, fetchWishlist } = useContext(ProductContext);
+  const { products } = useContext(ProductContext);
 
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -148,21 +149,31 @@ const ProductDetailScreen = ({
           >
             <Feather name="arrow-left" size={20} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleWishlist}
-            className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
-          >
-            {/* <Feather
+          <View className="flex-row gap-2">
+            {/* Cart btn */}
+            <TouchableOpacity
+              onPress={() => router.push("/user/cart")}
+              className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
+            >
+              <AntDesign name="shoppingcart" size={24} color="black" />
+            </TouchableOpacity>
+            {/* Wishlist btn */}
+            <TouchableOpacity
+              onPress={handleWishlist}
+              className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
+            >
+              {/* <Feather
               name="heart"
               size={20}
               // color={isFavorite ? "#FF6B6B" : "#666"}
             /> */}
-            {wishlist?.find((e) => e._id == productDetail?._id) ? (
-              <AntDesign name="heart" size={20} color="red" />
-            ) : (
-              <AntDesign name="hearto" size={20} color="black" />
-            )}
-          </TouchableOpacity>
+              {wishlist?.find((e) => e._id == productDetail?._id) ? (
+                <AntDesign name="heart" size={20} color="red" />
+              ) : (
+                <AntDesign name="hearto" size={20} color="black" />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Product Image with Gradient */}
@@ -241,9 +252,14 @@ const ProductDetailScreen = ({
             <View className="flex-row justify-between items-center">
               <View>
                 <Text className="text-gray-600 text-sm">Price</Text>
-                <Text className="text-2xl font-bold text-gray-800">
-                  ₹{productDetail?.price}
-                </Text>
+                <View className="flex-row gap-5 items-end">
+                  <Text className="text-2xl font-bold text-gray-800">
+                    ₹{productDetail?.price}
+                  </Text>
+                  <Text className="text-sm  font-bolds text-gray-500">
+                    per {productDetail?.unit && productDetail?.unit}{" "}
+                  </Text>
+                </View>
               </View>
 
               <View className="flex-row items-center">
@@ -357,40 +373,39 @@ const ProductDetailScreen = ({
               contentContainerStyle={{ paddingRight: 20 }}
               className="pt-1"
             >
-              {[1, 2, 3].map((item) => (
-                <TouchableOpacity
-                  key={item}
-                  className="bg-gray-50 rounded-xl mr-3 w-36 overflow-hidden"
-                >
-                  <Image
-                    source={{
-                      uri: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
-                    }}
-                    className="w-full h-24 bg-white"
-                    resizeMode="cover"
-                  />
-                  <View className="p-2">
-                    <Text
-                      className="font-medium text-gray-800 text-sm"
-                      numberOfLines={1}
-                    >
-                      {item === 1
-                        ? "Organic Kale"
-                        : item === 2
-                        ? "Fresh Lettuce"
-                        : "Wild Arugula"}
-                    </Text>
-                    <View className="flex-row justify-between items-center mt-1">
-                      <Text className="text-gray-800 font-semibold text-sm">
-                        ${(2.99 + item * 0.5).toFixed(2)}
+              {products
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 5)
+                .map((item) => (
+                  <TouchableOpacity
+                    key={item?._id}
+                    className="bg-gray-50 rounded-xl mr-3 w-36 overflow-hidden"
+                    onPress={() => router.replace(`/product/${item?._id}`)}
+                  >
+                    <Image
+                      source={{ uri: item?.images[0] }}
+                      className="w-full h-24 bg-white"
+                      resizeMode="cover"
+                    />
+                    <View className="p-2">
+                      <Text
+                        className="font-medium text-gray-800 text-sm"
+                        numberOfLines={1}
+                      >
+                        {item?.name}
                       </Text>
-                      <TouchableOpacity className="bg-gray-200 rounded-xl w-6 h-6 items-center justify-center">
-                        <Feather name="plus" size={14} color="#333" />
-                      </TouchableOpacity>
+                      <View className="flex-row justify-between items-center mt-1">
+                        <Text className="text-gray-800 font-semibold text-sm">
+                          {/* ${(2.99 + item * 0.5).toFixed(2)} */}₹
+                          {item?.price}
+                        </Text>
+                        <TouchableOpacity className="bg-gray-200 rounded-xl w-6 h-6 items-center justify-center">
+                          <Feather name="plus" size={14} color="#333" />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                ))}
             </ScrollView>
           </View>
         </View>

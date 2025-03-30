@@ -182,6 +182,7 @@ const ProductListingPage = () => {
         category: formData.category,
         stock: parseInt(formData.stock),
         location: formData.location,
+        unit: formData.unit,
       };
 
       const response = await axios.post(

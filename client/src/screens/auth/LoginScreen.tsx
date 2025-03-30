@@ -42,6 +42,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     try {
+      setIsLoading(true);
       const result = await onLogin!(email, password);
       if (result) {
         console.log("login result: inside if", result);
@@ -59,6 +60,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.log("@# login err:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 

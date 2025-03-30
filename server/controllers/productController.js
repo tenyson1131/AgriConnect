@@ -3,7 +3,8 @@ const User = require("../models/User");
 
 async function createProduct(req, res) {
   try {
-    const { name, desc, price, images, category, stock, location } = req.body;
+    const { name, desc, price, images, category, stock, location, unit } =
+      req.body;
     if (!name || !desc || !price || !category || !stock || !location) {
       return res.status(400).json({ message: "Please fill in all fields" });
     }
@@ -30,6 +31,7 @@ async function createProduct(req, res) {
       seller: userId,
       farmName: user.farmName,
       location,
+      unit,
     });
 
     await product.save();

@@ -58,8 +58,8 @@ const CheckoutPage = () => {
   });
 
   // Calculate order summary
-  const subtotal = Array.isArray(cart?.items)
-    ? cart.items.reduce(
+  const subtotal = Array.isArray(cart)
+    ? cart.reduce(
         (acc, item) => acc + (item?.price || 0) * (item?.quantity || 0),
         0
       )
@@ -124,7 +124,13 @@ const CheckoutPage = () => {
 
       if (res.status == 200) {
         loadUser();
-        router.replace("/user/profile/order");
+        // router.replace("/user/profile/order");
+        Alert.alert("Success", "Order placed successfully", [
+          {
+            text: "OK",
+            onPress: () => router.replace("/user/profile/order"),
+          },
+        ]);
       }
     } catch (error) {
       console.log("error while checkout", error.response);

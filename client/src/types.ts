@@ -38,6 +38,7 @@ export interface ProductInterface {
   images: string[];
   category: ProductCategory;
   stock: number;
+  unit?: string;
   seller: string;
   farmName: string;
   location: {

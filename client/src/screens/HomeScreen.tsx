@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { UserContext } from "@/context/UserContext";
 import { toggleWishlist } from "../utils/wishlistController";
 import { CartContext } from "@/context/CartContext";
 import Toast from "react-native-toast-message";
+import { ProductInterface } from "../types";
 
 const { width } = Dimensions.get("window");
 
@@ -62,6 +63,8 @@ const HomeScreen = () => {
   const { addToCart } = useContext(CartContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // const [searchedProducts, setProducts] = useState<ProductInterface>();
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);

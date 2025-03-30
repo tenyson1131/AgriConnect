@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   Ionicons,
   MaterialIcons,
@@ -45,6 +45,31 @@ const OrderScreen = () => {
 
     fetchOrders();
   }, []);
+
+  // useFocusEffect(() => {
+  //   useCallback(() => {
+  //     useEffect(() => {
+  //       const fetchOrders = async () => {
+  //         try {
+  //           const result = await axios.get(
+  //             `${process.env.EXPO_PUBLIC_SERVER_URL}/api/order/get-orders`
+  //           );
+
+  //           console.log("fetched orders: ", result.data);
+  //           if (result.data) {
+  //             setOrders(result.data.orders);
+  //           }
+  //         } catch (error) {
+  //           console.error("Error fetching orders:", error);
+  //         } finally {
+  //           setLoading(false);
+  //         }
+  //       };
+
+  //       fetchOrders();
+  //     }, []);
+  //   }, []);
+  // });
 
   const tabs = ["All", "Pending", "Confirmed", "Shipped", "Delivered"];
 
@@ -204,7 +229,9 @@ const OrderScreen = () => {
               <TouchableOpacity
                 key={order._id}
                 className="mb-6 bg-white rounded-3xl overflow-hidden shadow-sm"
-                onPress={() => router.push(`/orders/${order._id}`)}
+                // onPress={() =>
+                //   router.push(`/product/${order?.products[0]?.productId}`)
+                // }
               >
                 {/* Order Status Banner */}
                 <View
